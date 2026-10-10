@@ -1,71 +1,93 @@
-# ?? RetailPulse
-**Analítica Prescriptiva y Omnicanalidad para Retail**
+<div align="center">
+  <h1>[ RETAILPULSE ]</h1>
+  <p><b>Analitica Prescriptiva y Omnicanalidad para Retail</b></p>
+  <hr>
+</div>
 
-RetailPulse es una plataforma integral desarrollada para el **Retail Tech Challenge**. Ayudamos a transformar la gestión de inventarios pasando de una analítica descriptiva (saber qué pasó) a una **analítica prescriptiva** (saber exactamente qué hacer) conectada al consumidor final.
+RetailPulse es una plataforma integral desarrollada para el **Retail Tech Challenge**. Ayudamos a transformar la gestion de inventarios pasando de una analitica descriptiva (saber que paso) a una **analitica prescriptiva** (saber exactamente que hacer), conectada directamente al consumidor final.
 
-## ?? El Problema
+---
+
+## EL PROBLEMA
 Los supermercados y retailers pierden millones anualmente por dos razones principales:
-1. **Merma de perecederos (FEFO):** Productos que caducan en anaquel.
-2. **Capital Congelado (FIFO):** Productos estancados que saturan la bodega y evitan el ingreso de mercancía de alta rotación.
+1. **Merma de perecederos (FEFO):** Productos que caducan en anaquel y se convierten en perdida total.
+2. **Capital Congelado (FIFO):** Productos estancados que saturan la bodega y evitan el ingreso de mercancia de alta rotacion.
 
-## ?? Nuestra Solución
-Un **Sistema Experto Determinista** impulsado por Bases de Datos de Grafos. RetailPulse no es un dashboard más; es un motor que:
-- Detecta alertas críticas (Rojas, Amarillas, Azules, Moradas).
-- **Prescribe la acción exacta** (ej. "Aplicar 20% de descuento").
-- Proyecta matemáticamente la cantidad de **unidades rescatadas** y el impacto financiero.
-- Se conecta mediante **Omnicanalidad** al celular del cliente, disparando ofertas en tiempo real.
+Las herramientas tradicionales son *descriptivas*: solo avisan al gerente cuando la perdida ya ocurrio.
 
-## ?? Arquitectura y Stack Tecnológico
-Para garantizar cero "alucinaciones" (crítico en retail), evitamos la IA generativa para la toma de decisiones y optamos por un motor determinista y relacional:
+## NUESTRA SOLUCION
+Un **Sistema Experto Determinista** impulsado por Bases de Datos de Grafos. RetailPulse no es un dashboard mas; es un motor inteligente que:
+- **Detecta** alertas criticas en tiempo real (Rojas, Amarillas, Azules, Moradas).
+- **Prescribe** la accion operativa exacta (ej. "Aplicar 20% de descuento").
+- **Conecta** mediante **Omnicanalidad** al celular del cliente, disparando notificaciones push de ofertas flash en milisegundos.
 
-- **Backend:** Python 3.10+ y Flask 3.0+
-- **Base de Datos:** TigerGraph (Graph DB). Modela la relación [Producto] -> [Tienda] -> [Cliente].
-- **Motor de Reglas:** Lógica matemática de Investigación de Operaciones (ROPs, cálculos de mitigación a 7 cifras significativas).
-- **Frontend (B2B):** HTML5, CSS3, JavaScript (Vanilla) - *Dashboard Gerencial*.
-- **Frontend (B2C):** Long-polling asíncrono para notificaciones push - *App Cliente*.
+---
 
-## ?? Instalación y Configuración (Entorno Local)
+## MODELADO MATEMATICO (Ingenieria Industrial)
+Para garantizar cero "alucinaciones" (un riesgo inaceptable en el retail corporativo), nuestro motor de toma de decisiones no utiliza IA Generativa. Utilizamos **Investigacion de Operaciones** y modelos deterministas:
 
-Para correr el proyecto en cualquier computadora (Windows/Mac/Linux), sigue estos pasos:
+- **Puntos de Reorden (ROP):** Evaluados contra la demanda y el lead time para evitar el quiebre de stock.
+- **Proyeccion de Rescate Estocastica:** Usamos una precision de hasta 7 cifras significativas (ej. 10.8378535 u.) para proyectar exactamente cuantas unidades se venderan al aplicar un porcentaje de descuento.
+- **Impacto Financiero Real:** El sistema calcula la diferencia entre la **Merma Neta Original** (perdida total del lote) vs. el **Valor Rescatado** (capital protegido), demostrando el ROI exacto por cada decision tomada.
 
-1. **Clonar el repositorio:**
-   ``bash
-   git clone https://github.com/Ariel-Hdz-Gar/RoadToTech-HackProject.git
-   cd RoadToTech-HackProject
-   ``
+---
 
-2. **Crear un entorno virtual (Recomendado):**
-   ``bash
-   python -m venv venv
-   # En Windows:
-   venv\Scripts\activate
-   # En Mac/Linux:
-   source venv/bin/activate
-   ``
+## ARQUITECTURA Y STACK TECNOLOGICO
+- **Base de Datos de Grafos (TigerGraph):** Fundamental para mapear la compleja relacion [Producto] -> [Tienda] -> [Cliente Frecuente].
+- **Backend (Python 3.10+ / Flask 3.x):** API REST robusta que orquesta el motor de reglas y maneja el estado de los inventarios.
+- **Frontend Gerencial (B2B):** Interfaz ejecutiva en Modo Oscuro (HTML5, CSS3, JS Vanilla) para toma de decisiones rapidas.
+- **App del Cliente (B2C):** Simulador movil conectado por long-polling asincrono para recibir ofertas en tiempo real.
 
-3. **Instalar las dependencias:**
-   ``bash
-   pip install -r requirements.txt
-   ``
+---
 
-4. **Arrancar el servidor:**
-   ``bash
-   python app.py
-   ``
-   *El servidor iniciará en el puerto 5000 indicando la conexión exitosa.*
+## REQUISITOS E INSTALACION
 
-## ?? Guía para la Demostración (Hackathon Demo)
+Para correr el proyecto en cualquier computadora (Windows/Mac/Linux), sigue estos sencillos pasos:
+
+### 1. Clonar el repositorio
+```bash
+git clone https://github.com/Ariel-Hdz-Gar/RoadToTech-HackProject.git
+cd RoadToTech-HackProject
+```
+
+### 2. Crear y activar el entorno virtual (Recomendado)
+```bash
+python -m venv venv
+
+# En Windows:
+venv\Scripts\activate
+# En Mac/Linux:
+source venv/bin/activate
+```
+
+### 3. Instalar dependencias
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Arrancar el servidor
+```bash
+python app.py
+```
+*El servidor iniciara en http://127.0.0.1:5000 indicando la conexion exitosa.*
+
+---
+
+## GUIA PARA LA DEMOSTRACION (Hackathon Demo)
 
 Para ver el ciclo completo de omnicanalidad operando en tiempo real:
 
 1. **Abre el Dashboard Gerencial (B2B):**
-   Ve a [http://127.0.0.1:5000](http://127.0.0.1:5000) en tu navegador principal.
+   Ve a http://127.0.0.1:5000 en tu navegador principal.
 2. **Abre la App del Cliente (B2C):**
-   En una nueva ventana o pestaña secundaria, entra a [http://127.0.0.1:5000/cliente](http://127.0.0.1:5000/cliente). Emula la pantalla de un celular.
-3. **El Flujo:**
-   - Selecciona la misma tienda en ambas pantallas (Ej. *San Pedro*).
-   - En el Dashboard Gerencial, haz clic en **Aprobar Acción** en una de las alertas (ej. Leche o Jamón).
-   - **¡Magia!** Observa cómo la tarjeta de impacto financiero suma el dinero rescatado en el dashboard, mientras que la App del Cliente recibe **instantáneamente** una Push Notification con la oferta flash.
+   En una nueva ventana o pestana secundaria, entra a http://127.0.0.1:5000/cliente. Haz la ventana mas angosta para emular la pantalla de un celular.
+3. **El Flujo Magico:**
+   - Selecciona la **misma tienda** en ambas pantallas (Ej. Tienda D - San Pedro).
+   - En el Dashboard Gerencial, haz clic en "Aprobar Descuento" en la alerta roja.
+   - Observa como la tarjeta de impacto financiero suma el dinero rescatado en el dashboard, mientras que la **App del Cliente recibe instantaneamente una Push Notification** con la oferta flash.
 
 ---
-*Desarrollado con pasión para el Retail Tech Challenge ??*
+
+<div align="center">
+  <b>Con amor, el Equipo Los Papois</b>
+</div>
