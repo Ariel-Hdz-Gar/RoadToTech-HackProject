@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from motor_reglas import LotePerecedero, Bodega, LoteEstancado, EventoLocal, MotorAlertas
-from mock_db import db_perecederos, db_bodegas, db_estancados, db_eventos
+from db_connector import obtener_datos_dashboard
 
 app = FastAPI(title="API RetailPulse - MVP 4 Tarjetas")
 
@@ -34,6 +34,7 @@ def simular_evento(evento: EventoLocal):
 @app.get("/api/v1/alertas/{id_sucursal}")
 def obtener_alertas_dashboard(id_sucursal: int):
     alertas = []
+    db_perecederos, db_bodegas, db_estancados, db_eventos = obtener_datos_dashboard()
     
     for item in db_perecederos:
         if item["id_sucursal"] == id_sucursal:
