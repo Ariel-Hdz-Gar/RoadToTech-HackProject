@@ -1,175 +1,120 @@
-<<<<<<< HEAD
-a
-=======
-# ⚡ RetailPulse - Dashboard de Analítica Prescriptiva Retail
+# ⚡ RetailPulse - Analítica Prescriptiva de Inventarios con Grafos y Machine Learning
 
 <p align="center">
   <img src="https://img.shields.io/badge/RoadToTech-Hackathon%202026-brightgreen?style=for-the-badge&logo=rocket" alt="RoadToTech Hackathon">
+  <img src="https://img.shields.io/badge/TigerGraph-Cloud%20Savanna%20v4-FF6A00?style=for-the-badge&logo=database" alt="TigerGraph">
   <img src="https://img.shields.io/badge/Python-3.10%2B-blue?style=for-the-badge&logo=python" alt="Python">
   <img src="https://img.shields.io/badge/Flask-3.1.3-000000?style=for-the-badge&logo=flask" alt="Flask">
-  <img src="https://img.shields.io/badge/UI%2FUX-4%20Arquetipos%20Glassmorphism-purple?style=for-the-badge&logo=html5" alt="Glassmorphism UI">
-  <img src="https://img.shields.io/badge/Status-MVP%204%20Tarjetas%20Ready-success?style=for-the-badge" alt="Status">
+  <img src="https://img.shields.io/badge/Architecture-Graph%20Data%20Science%20%2B%20Prescriptive%20AI-purple?style=for-the-badge" alt="Architecture">
 </p>
 
-> **RetailPulse** es una plataforma web de analítica prescriptiva diseñada para transformar la gestión operativa de tiendas de conveniencia (tipo Oxxo). Reemplaza el análisis manual de gráficas complejas por **4 Tarjetas de Acción Prescriptivas** ejecutables en un solo clic.
+> **RetailPulse** es una plataforma de **Inteligencia Artificial Prescriptiva y Optimización de Inventarios en Tiempo Real** para cadenas de retail y conveniencia (ej. OXXO).  
+> A diferencia de los dashboards descriptivos tradicionales que solo muestran lo que ya ocurrió, **RetailPulse calcula matemáticamente la decisión óptima** y la presenta al gerente de tienda en **Tarjetas de Acción en un solo clic**, cerrando el ciclo con mutaciones vivas en una Base de Datos de Grafos (**TigerGraph Cloud**).
 
 ---
 
-## 📋 Tabla de Contenidos
-- [🚨 La Problemática (El Dolor del Cliente)](#-la-problemática-el-dolor-del-cliente)
-- [💡 La Solución (RetailPulse & 4 Arquetipos)](#-la-solución-retailpulse--4-arquetipos)
-- [🔄 Diagrama de Arquitectura y Flujo](#-diagrama-de-arquitectura-y-flujo)
-- [🎨 Características del Frontend UX/UI (4 Tarjetas)](#-características-del-frontend-uxui-4-tarjetas)
-- [📁 Estructura del Repositorio](#-estructura-del-repositorio)
-- [🛠️ Guía de Instalación y Ejecución Local](#️-guía-de-instalación-y-ejecución-local)
-- [🔌 Contrato de Integración API REST](#-contrato-de-integración-api-rest)
-- [🎤 Guía de Presentación / Pitch para Jueces](#-guía-de-presentación--pitch-para-jueces)
+## 🤖 ¿Dónde y Cómo se usa la Inteligencia Artificial (IA)?
+
+> [!IMPORTANT]
+> **No usamos IA Generativa (LLMs) para inventar texto o alucinar datos.**  
+> Utilizamos **Inteligencia Artificial Determinista, Graph Data Science (GDS) y Modelación Numérica de Investigación de Operaciones (Operations Research)** con datos reales de transacciones e inventarios.
+
+### 1. Graph Data Science (GDS) y Redes de Venta Cruzada (Tarjeta Azul)
+* **Algoritmo:** Detección de Comunidades / Enlaces Ponderados (*Link Analysis & Association Rule Mining* sobre el grafo `tienda`).
+* **Función:** El grafo analiza la arista `inventario_almacen` y correlaciones históricas de compra. Si un producto como *Donas* tiene baja rotación, el modelo de grafos encuentra el producto con mayor afinidad de co-ocurrencia (*Lift* y *Support*, ej. *Café* o *Leche*) y prescribe la **Venta Cruzada Automática**.
+
+### 2. Demanda Predictiva Estocástica (Tarjeta Morada)
+* **Algoritmo:** Regresión con Factores Exógenos (*Event Impact Modeling*).
+* **Función:** Ajusta la demanda esperada $\bar{d}$ incorporando la afluencia $A$ de eventos externos geolocalizados a menos de 2 km, modificando dinámicamente la distribución de probabilidad de agotamiento antes de que el evento ocurra.
+
+### 3. Asignación Óptima de Personal por Teoría de Colas (Tarjeta Morada)
+* **Algoritmo:** Modelo $M/M/c$ de Teoría de Colas con Restricción de Capacidad Instalada.
+* **Función:** Minimiza la función de costo conjunto (Costo de fila/espera vs. Costo de nómina ociosa).
 
 ---
 
-## 🚨 La Problemática (El Dolor del Cliente)
+## 📐 Métodos Numéricos y Fórmulas Matemáticas Oficiales
 
-Las tiendas de conveniencia de alta densidad operan habitualmente de manera **reactiva y a ciegas**:
+### 1. Punto de Reorden Dinámico (ROP - Reorder Point)
+Utilizado para calcular cuándo disparar la orden de compra antes de que ocurra un quiebre de stock:
 
-1. **Merma por Caducidad:** Se tiran miles de pesos a la basura semanalmente por no detectar comida perecedera a tiempo.
-2. **Saturación Física de Bodega:** La bodega se abarrota de inventario de gran volumen, impidiendo la descarga del camión de reabastecimiento.
-3. **Capital Financiero Estancado:** Productos de baja rotación (ej. licores premium) inmovilizan miles de pesos en flujo de caja durante meses.
-4. **Falta de Predicción (Personal e Inventario):** Ante eventos masivos cercanos (ej. conciertos), la tienda sufre desabasto de cerveza/hielo y largas filas por falta de cajeros.
+$$\text{ROP} = (\bar{d} \times L) + \text{SS}$$
 
----
+Donde:
+* $\bar{d}$: Demanda promedio diaria histórica.
+* $L$: Tiempo de entrega del proveedor (*Lead Time* en días).
+* $\text{SS}$: Stock de Seguridad probabilístico:
 
-## 💡 La Solución (RetailPulse & 4 Arquetipos)
+$$\text{SS} = Z \times \sigma_d \times \sqrt{L}$$
 
-**RetailPulse** cambia el paradigma: **El gerente no analiza datos; el gerente solo decide y aprueba.**
-
-El sistema genera **4 Arquetipos de Tarjetas Prescriptivas**:
-
-```mermaid
-flowchart TD
-    subgraph DataSources["Fuentes de Datos"]
-        INV["📦 Inventarios"]
-        LOG["🚚 Bodega"]
-        FIN["💰 Ventas & Rotación"]
-        EVT["🏟️ Eventos Locales"]
-    end
-
-    subgraph Engine["Motor Prescriptivo RetailPulse"]
-        RULE["⚡ Reglas Numéricas FEFO / FIFO / Reorden"]
-    end
-
-    subgraph Archetypes["4 Arquetipos de Tarjetas Prescriptivas"]
-        RED["🚨 Roja: Perecederos (FEFO)"]
-        YEL["🟡 Amarilla: Volumen Físico (FIFO)"]
-        BLU["🔵 Azul: Capital Estancado (Larga Caducidad)"]
-        PUR["🟣 Morada: Demanda Predictiva (Punto de Reorden & Cajeros)"]
-    end
-
-    INV --> RULE
-    LOG --> RULE
-    FIN --> RULE
-    EVT --> RULE
-
-    RULE --> RED
-    RULE --> YEL
-    RULE --> BLU
-    RULE --> PUR
-```
+* $Z$: Nivel de servicio deseado ($Z = 1.65$ para $95\%$ de disponibilidad garantizada).
+* $\sigma_d$: Desviación estándar de la demanda diaria.
 
 ---
 
-## 🎨 Características del Frontend UX/UI (4 Tarjetas)
+### 2. Modelo de Asignación Óptima de Cajeros (Teoría de Colas Retail)
+Para evitar el sobrecosto laboral y calcular exactamente el refuerzo necesario durante la ventana pico del evento:
 
-* **💎 Estilo Glassmorphism Dark Theme:** Fondo en tonalidad Slate (`#090D16`), tarjetas traslúcidas con efecto *backdrop-blur* y bordes de neón según el arquetipo.
-* **🏬 Selector de Sucursales:** Cambio dinámico entre tiendas (*Sucursal Monterrey Norte*, *Sucursal Monterrey Sur*, *Sucursal Centro*).
-* **💰 Tarjetas de KPIs en Tiempo Real:**
-  - **Capital en Riesgo Proyectado ($ MXN)**
-  - **Alertas Críticas Activas**
-  - **Acciones Pendientes por Aprobar**
-  - **Acciones Ejecutadas Exitosamente**
-* **📋 Definición de los 4 Arquetipos Prescriptivos:**
+$$\lambda = \frac{A \times k}{T}$$
 
-| Color | Arquetipo | Lógica | Problema | Solución Prescriptiva |
-| :---: | :--- | :--- | :--- | :--- |
-| 🚨 | **Perecederos** | FEFO | Caduca en $< 3$ días (ej. sándwiches) | Descuento 40% hiperlocal en App Oxxo y remate |
-| 🟡 | **Volumen Físico** | FIFO / Racks | Bodega $> 90\%$ llena (ej. botanas/sabritas) | Promoción 3x2 y mover empleado a bodega |
-| 🔵 | **Larga Caducidad** | Capital Estancado | Lote lleva $> 40$ días sin rotación (ej. tequila) | Venta cruzada automática (15% desc. con hielos) |
-| 🟣 | **Demanda Predictiva** | Reorden Dinámico | Concierto / Partido a 2km en 3 días | Sobresurtir cerveza (+50 cajas) y +2 cajeros extra |
+Donde:
+* $A$: Afluencia proyectada del evento (personas).
+* $k$: Tasa de captura comercial geográfica ($k = 0.12$, el $12\%$ de los asistentes visitará esta sucursal específica).
+* $T$: Ventana de pico comercial concentrada ($T = 3.0\text{ horas}$).
+* $\lambda$: Tasa de llegada de clientes por hora a la tienda.
 
-* **✨ Animaciones y Notificaciones:**
-  - Desaparición suave `fade/slide-out` al presionar `[ ✅ Aprobar Acción ]`.
-  - Toast emergente confirmando la ejecución inmediata.
-  - Pantalla de **Empty State** al completar todas las alertas.
+Con una tasa de despacho en caja de $\mu = 20\text{ clientes/hora}$ (3 minutos por transacción):
+
+$$\text{Cajeros Requeridos} = \left\lceil \frac{\lambda}{\mu} \right\rceil$$
+
+Aplicando el **Tope Físico Estructural** de una tienda de conveniencia (máximo 3 cajas):
+
+$$\text{Cajeros Finales} = \min\left(3, \; \max\left(1, \; \left\lceil \frac{\lambda}{\mu} \right\rceil\right)\right)$$
+
+*Resultado:* El sistema asigna turnos parciales de 4 horas en horario pico sin sobredimensionar la nómina.
 
 ---
 
-## 📁 Estructura del Repositorio
+### 3. Algoritmo de Rescate de Merma (FEFO - First Expired, First Out)
+Para productos perecederos (Leche, Jamón), el sistema evalúa la ventana crítica de caducidad:
 
-```text
-RoadToTech-HackProject/
-├── Back-End/               # Motor de reglas numéricas y modelos de Ariel
-│   ├── main.py             # FastAPI Server de Ariel
-│   ├── mock_db.py          # Simulación de datos de inventario y bodega
-│   └── motor_reglas.py     # Lógica determinista de alertas (FEFO/FIFO)
-├── app.py                  # Servidor Flask (API REST + Servidor Web del Frontend)
-├── templates/
-│   └── index.html          # Interfaz de Usuario HTML5 Dashboard
-├── static/
-│   ├── css/
-│   │   └── style.css       # Estilos Glassmorphism (4 Arquetipos) y responsive grid
-│   └── js/
-│       └── main.js         # Lógica interactiva cliente (Fetch API, Toasts, State)
-├── requirements.txt        # Dependencias de Python (Flask, FastAPI, Pydantic)
-└── README.md               # Documentación oficial del proyecto
-```
+$$\Delta t_{\text{caducidad}} = \text{Fecha}_{\text{caducidad}} - \text{Fecha}_{\text{actual}}$$
+
+$$\text{Condición de Alerta Roja} \iff \Delta t_{\text{caducidad}} \le 3 \quad \lor \quad \text{Stock Actual} \le \text{ROP}$$
 
 ---
 
-## 🛠️ Guía de Instalación y Ejecución Local
+### 4. Coeficiente de Saturación Física de Bodega (FIFO - First In, First Out)
+Para productos voluminosos (Paketaxo):
 
-### 1. Clonar el Repositorio
-```bash
-git clone https://github.com/Ariel-Hdz-Gar/RoadToTech-HackProject.git
-cd RoadToTech-HackProject
-```
+$$\% \text{Saturación} = \left( \frac{\sum V_{\text{ocupado}}}{V_{\text{total}}} \right) \times 100$$
 
-### 2. Instalar Dependencias
-```bash
-pip install -r requirements.txt
-```
+$$\text{Condición de Alerta Amarilla} \iff \% \text{Saturación} \ge 80.0\%$$
 
-### 3. Levantar el Servidor Web del Dashboard
-```bash
-python app.py
-```
-Abre tu navegador en: **`http://localhost:5000`**
+Prescribe reordenamiento físico y aceleración de salida antes de que se bloquee el muelle de descarga.
 
 ---
 
-## 🔌 Contrato de Integración API REST
+## 🗄️ Esquema del Grafo en TigerGraph Cloud (`tienda`)
 
-| Ruta | Método | Descripción |
-| :--- | :---: | :--- |
-| `/api/alerts` | `GET` | Obtiene las alertas de los 4 arquetipos agrupadas por sucursal. |
-| `/api/alerts/approve` | `POST` | Elimina la tarjeta aprobada y suma al contador de ejecuciones. |
-| `/api/alerts/reset` | `POST` | Restablece las alertas iniciales para la demo. |
+El sistema corre sobre un grafo real en **TigerGraph Cloud Savanna v4**:
+* **Vértice `Tienda`:** Atributo `ubicacion`.
+* **Vértice `almacen`:** Atributos `capacidad_max_m3`, `ocupacion_actual_m3`.
+* **Vértice `inventario`:** Atributos `nombre_producto`, `fecha_caducidad`, `cantidad`.
+* **Aristas:** `almacen_tienda`, `inventario_almacen`.
 
----
-
-## 🎤 Guía de Presentación / Pitch para Jueces
-
-1. **Abrir el Dashboard (`http://localhost:5000`):** Destaca las **4 Tarjetas de Colores** en *Sucursal Monterrey Norte*.
-2. **Explicar los 4 Arquetipos:**
-   - 🚨 **Roja:** Comida pudriéndose (FEFO).
-   - 🟡 **Amarilla:** Espacio físico bloqueado en bodega (FIFO).
-   - 🔵 **Azul:** Dinero estancado sin flujo (Capital inmovilizado).
-   - 🟣 **Morada:** Oportunidad comercial y ajuste de personal por eventos.
-3. **Ejecutar la Demo:** Da clic en `[ ✅ Aprobar Acción ]` en la tarjeta azul de Venta Cruzada. Muestra la animación de desvanecimiento, el Toast verde y el recálculo instantáneo del capital en riesgo.
-4. **Reiniciar Demo:** Haz clic en **`Demo Reset`** en la esquina superior derecha para volver a comenzar.
+Al hacer clic en **"Aprobar Acción"**, el frontend invoca `upsertVertex` en TigerGraph mutando el inventario en tiempo real.
 
 ---
 
-<p align="center">
-  <b>Desarrollado para RoadToTech Hackathon 🚀</b><br>
-  <i>Ariel Hernández (Backend & Algoritmos) • Equipo RetailPulse (Frontend UX/UI)</i>
-</p>
->>>>>>> d6d951056fdd9ed1cd958869619ac135abe47628
+## 🛠️ Ejecución Local
+
+1. **Instalar dependencias:**
+   ```bash
+   pip install -r requirements.txt
+   ```
+2. **Iniciar servidor:**
+   ```bash
+   python app.py
+   ```
+3. **Acceder:** `http://127.0.0.1:5000`
