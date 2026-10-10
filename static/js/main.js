@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const alertsTbody = document.getElementById('alertsTbody');
     const alertsCountBadge = document.getElementById('alertsCountBadge');
     
-    const kpiCapital = document.getElementById('kpiCapital');
     const kpiCritical = document.getElementById('kpiCritical');
     const kpiPending = document.getElementById('kpiPending');
     const kpiExecuted = document.getElementById('kpiExecuted');
@@ -14,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let alertsData = {};
     let executedCount = 0;
 
-    // Fetch alerts from Flask API
+    // Fetch alerts from Flask API (connected to Ariel's backend)
     async function loadAlerts() {
         try {
             const response = await fetch('/api/alerts');
@@ -27,21 +26,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Render alerts in executive table
+    // Render alerts in executive table using Ariel's exact output fields
     function renderDashboard() {
         const branchAlerts = alertsData[currentBranch] || [];
         
         // Calculate KPIs
-        const capitalAtRisk = branchAlerts.reduce((sum, a) => sum + (a.impact_value || 0), 0);
-        const criticalCount = branchAlerts.filter(a => a.critical).length;
+        const criticalCount = branchAlerts.filter(a => a.critical || a.tipo_alerta === 'roja').length;
         const pendingCount = branchAlerts.length;
 
         // Update KPI DOM
-        kpiCapital.textContent = `$${capitalAtRisk.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN`;
         kpiCritical.textContent = criticalCount;
         kpiPending.textContent = pendingCount;
         kpiExecuted.textContent = executedCount;
-        alertsCountBadge.textContent = `${pendingCount} pendientes`;
+        alertsCountBadge.textContent = `${pendingCount} activas`;
 
         // Clear table body
         alertsTbody.innerHTML = '';
@@ -49,11 +46,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (branchAlerts.length === 0) {
             alertsTbody.innerHTML = `
                 <tr class="empty-row">
-                    <td colspan="5">
+                    <td colspan="4">
                         <div class="empty-state-box">
                             <i class="fa-solid fa-circle-check empty-icon"></i>
-                            <h4>Sucursal Operando con Eficiencia Total</h4>
-                            <p>No existen riesgos pendientes en inventario, bodega o rotación de personal para esta sucursal.</p>
+                            <h4>Sucursal Operando en Estado Óptimo</h4>
+                            <p>No existen riesgos pendientes detectados por el Motor de Reglas para esta sucursal.</p>
                         </div>
                     </td>
                 </tr>
@@ -66,31 +63,38 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.id = `row-${alert.id}`;
 
             let badgeHtml = '';
-            if (alert.type === 'red') {
-                badgeHtml = `<span class="status-badge badge-red"><i class="fa-solid fa-triangle-exclamation"></i> Crítico (FEFO)</span>`;
-            } else if (alert.type === 'yellow') {
-                badgeHtml = `<span class="status-badge badge-yellow"><i class="fa-solid fa-boxes-stacked"></i> Bodega (FIFO)</span>`;
-            } else if (alert.type === 'blue') {
-                badgeHtml = `<span class="status-badge badge-blue"><i class="fa-solid fa-vault"></i> Estancado</span>`;
-            } else if (alert.type === 'purple') {
-                badgeHtml = `<span class="status-badge badge-purple"><i class="fa-solid fa-calendar-day"></i> Evento</span>`;
+            let categoryIcon = '';
+
+            if (alert.tipo_alerta === 'roja') {
+                categoryIcon = '<i class="fa-solid fa-triangle-exclamation"></i>';
+                badgeHtml = `<span class="status-badge badge-roja">${categoryIcon} Alerta Roja (FEFO)</span>`;
+            } else if (alert.tipo_alerta === 'amarilla') {
+                categoryIcon = '<i class="fa-solid fa-boxes-stacked"></i>';
+                badgeHtml = `<span class="status-badge badge-amarilla">${categoryIcon} Alerta Amarilla (FIFO)</span>`;
+            } else if (alert.tipo_alerta === 'morada') {
+                categoryIcon = '<i class="fa-solid fa-calendar-day"></i>';
+                badgeHtml = `<span class="status-badge badge-morada">${categoryIcon} Alerta Morada (Demanda)</span>`;
+            }
+
+            // Staffing recommendation text formatting
+            let staffHtml = '';
+            if (alert.recomendacion_personal && alert.recomendacion_personal !== 'N/A') {
+                staffHtml = `<div class="recommendation-staff"><i class="fa-solid fa-user-check"></i> Personal: ${alert.recomendacion_personal}</div>`;
             }
 
             tr.innerHTML = `
                 <td>${badgeHtml}</td>
                 <td>
-                    <div class="item-title">${alert.title}</div>
-                    <div class="item-subtext">${alert.category}</div>
+                    <div class="item-title">${alert.titulo}</div>
+                    <div class="item-subtext">${alert.descripcion}</div>
                 </td>
                 <td>
-                    <div class="impact-text">${alert.impact}</div>
-                </td>
-                <td>
-                    <div class="recommendation-text">${alert.recommendation}</div>
+                    <div class="recommendation-inv">${alert.recomendacion_inventario}</div>
+                    ${staffHtml}
                 </td>
                 <td style="text-align: center;">
-                    <button class="btn-action" onclick="approveAction('${alert.id}', '${escapeQuotes(alert.title)}')">
-                        <i class="fa-solid fa-check"></i> Aprobar Acción
+                    <button class="btn-action" onclick="approveAction('${alert.id}', '${escapeQuotes(alert.titulo)}')">
+                        <i class="fa-solid fa-check"></i> ${alert.texto_boton || 'Aprobar Acción'}
                     </button>
                 </td>
             `;
@@ -123,7 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alertsData = resData.alerts;
                 executedCount = resData.executed_count;
 
-                showToast(`Acción aprobada correctamente: ${alertTitle}`);
+                showToast(`Acción ejecutada correctamente: ${alertTitle}`);
 
                 setTimeout(() => {
                     renderDashboard();
@@ -142,7 +146,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (resData.success) {
                 alertsData = resData.alerts;
                 executedCount = resData.executed_count;
-                showToast('Datos de demo restablecidos');
+                showToast('Datos del Motor Restablecidos');
                 renderDashboard();
             }
         } catch (error) {

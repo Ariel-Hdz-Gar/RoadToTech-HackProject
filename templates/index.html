@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RetailPulse - Dashboard de Analítica Prescriptiva</title>
+    <title>RetailPulse - Dashboard Prescriptivo Retail</title>
     <!-- Google Fonts: Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- FontAwesome 6 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Custom Executive CSS -->
+    <!-- Custom Dark Executive CSS -->
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
@@ -23,17 +23,17 @@
                 </div>
                 <div class="nav-title">
                     <h1>RetailPulse</h1>
-                    <span class="nav-subtitle">Analítica Prescriptiva Retail</span>
+                    <span class="nav-subtitle">Analítica Prescriptiva de Inventarios</span>
                 </div>
             </div>
 
             <div class="nav-actions">
                 <div class="select-wrapper">
-                    <i class="fa-solid fa-location-dot select-icon"></i>
+                    <i class="fa-solid fa-store select-icon"></i>
                     <select id="branchSelect" class="exec-select">
-                        <option value="Sucursal Monterrey Norte 📍">Sucursal Monterrey Norte</option>
-                        <option value="Sucursal Monterrey Sur 📍">Sucursal Monterrey Sur</option>
-                        <option value="Sucursal Centro 📍">Sucursal Centro</option>
+                        <option value="Sucursal 1 - Monterrey Norte 📍">Sucursal 1 - Monterrey Norte</option>
+                        <option value="Sucursal 2 - Monterrey Sur 📍">Sucursal 2 - Monterrey Sur</option>
+                        <option value="Sucursal 3 - Centro 📍">Sucursal 3 - Centro</option>
                     </select>
                 </div>
                 <button id="resetBtn" class="btn-outline">
@@ -49,7 +49,7 @@
         <div class="page-header">
             <div>
                 <h2 class="page-title">Cuadro de Mando Operativo</h2>
-                <p class="page-description">Alertas de inventario y decisiones prescriptivas para optimización de sucursal.</p>
+                <p class="page-description">Motor de Reglas Numéricas conectado en tiempo real al inventario de la sucursal.</p>
             </div>
             <div class="system-status">
                 <span class="status-indicator"></span> Motor Prescriptivo Activo
@@ -60,22 +60,11 @@
         <section class="metrics-grid">
             <div class="metric-card border-danger">
                 <div class="metric-content">
-                    <span class="metric-label">Capital en Riesgo Proyectado</span>
-                    <div class="metric-value" id="kpiCapital">$0.00 MXN</div>
-                    <span class="metric-subtext" id="kpiCapitalSub">Merma e inmovilización estimada</span>
-                </div>
-                <div class="metric-icon icon-danger">
-                    <i class="fa-solid fa-sack-xmark"></i>
-                </div>
-            </div>
-
-            <div class="metric-card border-warning">
-                <div class="metric-content">
                     <span class="metric-label">Alertas Críticas</span>
                     <div class="metric-value" id="kpiCritical">0</div>
-                    <span class="metric-subtext">Requieren intervención hoy</span>
+                    <span class="metric-subtext">Perecederos (FEFO)</span>
                 </div>
-                <div class="metric-icon icon-warning">
+                <div class="metric-icon icon-danger">
                     <i class="fa-solid fa-triangle-exclamation"></i>
                 </div>
             </div>
@@ -84,10 +73,10 @@
                 <div class="metric-content">
                     <span class="metric-label">Acciones Pendientes</span>
                     <div class="metric-value" id="kpiPending">0</div>
-                    <span class="metric-subtext">Propuestas para aprobación</span>
+                    <span class="metric-subtext">Evaluadas por el Motor</span>
                 </div>
                 <div class="metric-icon icon-primary">
-                    <i class="fa-solid fa-clipboard-list"></i>
+                    <i class="fa-solid fa-list-check"></i>
                 </div>
             </div>
 
@@ -95,7 +84,7 @@
                 <div class="metric-content">
                     <span class="metric-label">Acciones Ejecutadas</span>
                     <div class="metric-value" id="kpiExecuted">0</div>
-                    <span class="metric-subtext">Optimizaciones aprobadas hoy</span>
+                    <span class="metric-subtext">Aprobadas por el Gerente</span>
                 </div>
                 <div class="metric-icon icon-success">
                     <i class="fa-solid fa-circle-check"></i>
@@ -103,12 +92,12 @@
             </div>
         </section>
 
-        <!-- Prescriptive Table Section -->
+        <!-- Prescriptive Actions Section -->
         <section class="table-section">
             <div class="table-header-bar">
                 <div class="table-title">
-                    <h3>Acciones Prescriptivas Prioritarias</h3>
-                    <span class="count-pill" id="alertsCountBadge">0 pendientes</span>
+                    <h3>Tarjetas de Acción Prescriptiva</h3>
+                    <span class="count-pill" id="alertsCountBadge">0 activas</span>
                 </div>
             </div>
 
@@ -116,15 +105,14 @@
                 <table class="exec-table">
                     <thead>
                         <tr>
-                            <th style="width: 140px;">Prioridad</th>
-                            <th style="width: 260px;">Diagnóstico / Producto</th>
-                            <th style="width: 220px;">Impacto Operativo</th>
-                            <th>Acción Recomendada</th>
-                            <th style="width: 170px; text-align: center;">Decisión</th>
+                            <th style="width: 150px;">Categoría</th>
+                            <th style="width: 280px;">Diagnóstico del Sistema</th>
+                            <th>Recomendación Prescriptiva</th>
+                            <th style="width: 220px; text-align: center;">Acción Gerencial</th>
                         </tr>
                     </thead>
                     <tbody id="alertsTbody">
-                        <!-- Dynamic rows rendered by JS -->
+                        <!-- Rows rendered dynamically from Ariel's backend -->
                     </tbody>
                 </table>
             </div>
