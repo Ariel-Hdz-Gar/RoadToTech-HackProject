@@ -14,3 +14,12 @@ Un **Sistema Experto Determinista** impulsado por Bases de Datos de Grafos. Reta
 - **Prescribe la acción exacta** (ej. "Aplicar 20% de descuento").
 - Proyecta matemáticamente la cantidad de **unidades rescatadas** y el impacto financiero.
 - Se conecta mediante **Omnicanalidad** al celular del cliente, disparando ofertas en tiempo real.
+
+## ?? Arquitectura y Stack Tecnológico
+Para garantizar cero "alucinaciones" (crítico en retail), evitamos la IA generativa para la toma de decisiones y optamos por un motor determinista y relacional:
+
+- **Backend:** Python 3.10+ y Flask 3.0+
+- **Base de Datos:** TigerGraph (Graph DB). Modela la relación [Producto] -> [Tienda] -> [Cliente].
+- **Motor de Reglas:** Lógica matemática de Investigación de Operaciones (ROPs, cálculos de mitigación a 7 cifras significativas).
+- **Frontend (B2B):** HTML5, CSS3, JavaScript (Vanilla) - *Dashboard Gerencial*.
+- **Frontend (B2C):** Long-polling asíncrono para notificaciones push - *App Cliente*.
