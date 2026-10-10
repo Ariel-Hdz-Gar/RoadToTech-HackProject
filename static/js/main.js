@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const branchSelect = document.getElementById('branchSelect');
     const resetBtn = document.getElementById('resetBtn');
-    const alertsContainer = document.getElementById('alertsContainer');
+    const alertsTbody = document.getElementById('alertsTbody');
     const alertsCountBadge = document.getElementById('alertsCountBadge');
     
     const kpiCapital = document.getElementById('kpiCapital');
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Render alerts and update KPIs
+    // Render alerts in executive table
     function renderDashboard() {
         const branchAlerts = alertsData[currentBranch] || [];
         
@@ -41,49 +41,61 @@ document.addEventListener('DOMContentLoaded', () => {
         kpiCritical.textContent = criticalCount;
         kpiPending.textContent = pendingCount;
         kpiExecuted.textContent = executedCount;
-        alertsCountBadge.textContent = `${pendingCount} activas`;
+        alertsCountBadge.textContent = `${pendingCount} pendientes`;
 
-        // Clear container
-        alertsContainer.innerHTML = '';
+        // Clear table body
+        alertsTbody.innerHTML = '';
 
         if (branchAlerts.length === 0) {
-            alertsContainer.innerHTML = `
-                <div class="empty-state">
-                    <i class="fa-solid fa-circle-check empty-icon"></i>
-                    <h4>¡Excelente Trabajo!</h4>
-                    <p>No hay alertas ni riesgos pendientes para esta sucursal. El sistema prescriptivo opera al 100% de eficiencia.</p>
-                </div>
+            alertsTbody.innerHTML = `
+                <tr class="empty-row">
+                    <td colspan="5">
+                        <div class="empty-state-box">
+                            <i class="fa-solid fa-circle-check empty-icon"></i>
+                            <h4>Sucursal Operando con Eficiencia Total</h4>
+                            <p>No existen riesgos pendientes en inventario, bodega o rotación de personal para esta sucursal.</p>
+                        </div>
+                    </td>
+                </tr>
             `;
             return;
         }
 
         branchAlerts.forEach(alert => {
-            const card = document.createElement('div');
-            card.className = `alert-card ${alert.type}`;
-            card.id = `card-${alert.id}`;
+            const tr = document.createElement('tr');
+            tr.id = `row-${alert.id}`;
 
-            card.innerHTML = `
-                <div class="card-main-info">
-                    <span class="card-header-badge">
-                        ${alert.emoji} ${alert.category}
-                    </span>
-                    <div class="card-title">${alert.title}</div>
-                    <div class="card-impact">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <span><b>Impacto Estimado:</b> ${alert.impact}</span>
-                    </div>
-                    <div class="card-recommendation">
-                        🎯 <strong>Acción Prescriptiva Sugerida:</strong> ${alert.recommendation}
-                    </div>
-                </div>
-                <div class="card-action-side">
-                    <button class="btn-approve" onclick="approveAction('${alert.id}', '${escapeQuotes(alert.title)}')">
+            let badgeHtml = '';
+            if (alert.type === 'red') {
+                badgeHtml = `<span class="status-badge badge-red"><i class="fa-solid fa-triangle-exclamation"></i> Crítico (FEFO)</span>`;
+            } else if (alert.type === 'yellow') {
+                badgeHtml = `<span class="status-badge badge-yellow"><i class="fa-solid fa-boxes-stacked"></i> Bodega (FIFO)</span>`;
+            } else if (alert.type === 'blue') {
+                badgeHtml = `<span class="status-badge badge-blue"><i class="fa-solid fa-vault"></i> Estancado</span>`;
+            } else if (alert.type === 'purple') {
+                badgeHtml = `<span class="status-badge badge-purple"><i class="fa-solid fa-calendar-day"></i> Evento</span>`;
+            }
+
+            tr.innerHTML = `
+                <td>${badgeHtml}</td>
+                <td>
+                    <div class="item-title">${alert.title}</div>
+                    <div class="item-subtext">${alert.category}</div>
+                </td>
+                <td>
+                    <div class="impact-text">${alert.impact}</div>
+                </td>
+                <td>
+                    <div class="recommendation-text">${alert.recommendation}</div>
+                </td>
+                <td style="text-align: center;">
+                    <button class="btn-action" onclick="approveAction('${alert.id}', '${escapeQuotes(alert.title)}')">
                         <i class="fa-solid fa-check"></i> Aprobar Acción
                     </button>
-                </div>
+                </td>
             `;
 
-            alertsContainer.appendChild(card);
+            alertsTbody.appendChild(tr);
         });
     }
 
@@ -93,10 +105,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Approve Action function
     window.approveAction = async function(alertId, alertTitle) {
-        const cardElement = document.getElementById(`card-${alertId}`);
+        const rowElement = document.getElementById(`row-${alertId}`);
         
-        if (cardElement) {
-            cardElement.classList.add('removing');
+        if (rowElement) {
+            rowElement.classList.add('removing');
         }
 
         try {
@@ -111,11 +123,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 alertsData = resData.alerts;
                 executedCount = resData.executed_count;
 
-                showToast(`✅ Acción Aprobada: ${alertTitle}`);
+                showToast(`Acción aprobada correctamente: ${alertTitle}`);
 
                 setTimeout(() => {
                     renderDashboard();
-                }, 300);
+                }, 250);
             }
         } catch (error) {
             console.error('Error approving action:', error);
@@ -130,7 +142,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (resData.success) {
                 alertsData = resData.alerts;
                 executedCount = resData.executed_count;
-                showToast('🔄 Datos de demostración restablecidos');
+                showToast('Datos de demo restablecidos');
                 renderDashboard();
             }
         } catch (error) {
@@ -147,7 +159,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Toast Notification Creator
     function showToast(message) {
         const toast = document.createElement('div');
-        toast.className = 'toast';
+        toast.className = 'toast-msg';
         toast.innerHTML = `<i class="fa-solid fa-circle-check"></i> <span>${message}</span>`;
         
         toastContainer.appendChild(toast);
@@ -155,9 +167,9 @@ document.addEventListener('DOMContentLoaded', () => {
         setTimeout(() => {
             toast.style.opacity = '0';
             toast.style.transform = 'translateY(10px)';
-            toast.style.transition = 'all 0.3s ease';
-            setTimeout(() => toast.remove(), 300);
-        }, 3500);
+            toast.style.transition = 'all 0.25s ease';
+            setTimeout(() => toast.remove(), 250);
+        }, 3000);
     }
 
     // Initial load
