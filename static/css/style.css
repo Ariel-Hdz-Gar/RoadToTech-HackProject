@@ -1,0 +1,464 @@
+/* ==========================================================================
+   RetailPulse - Eye-Pleasing Dark Executive BI Dashboard
+   ========================================================================== */
+
+:root {
+    --bg-page: #0F172A;
+    --bg-surface: #1E293B;
+    --bg-surface-hover: #334155;
+    --border-color: #334155;
+    
+    --text-main: #F8FAFC;
+    --text-muted: #CBD5E1;
+    --text-light: #94A3B8;
+    
+    /* Category Badge Colors */
+    --status-red-bg: rgba(239, 68, 68, 0.15);
+    --status-red-text: #FCA5A5;
+    --status-red-border: rgba(239, 68, 68, 0.4);
+    
+    --status-yellow-bg: rgba(245, 158, 11, 0.15);
+    --status-yellow-text: #FDE047;
+    --status-yellow-border: rgba(245, 158, 11, 0.4);
+    
+    --status-purple-bg: rgba(168, 85, 247, 0.15);
+    --status-purple-text: #E9D5FF;
+    --status-purple-border: rgba(168, 85, 247, 0.4);
+    
+    --brand-primary: #38BDF8;
+    --brand-success: #10B981;
+    --brand-success-hover: #059669;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Header & Top Navigation */
+.top-nav {
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    padding: 14px 32px;
+}
+
+.nav-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.nav-logo {
+    width: 38px;
+    height: 38px;
+    background: linear-gradient(135deg, #0284C7, #38BDF8);
+    color: #FFFFFF;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 2px 10px rgba(56, 189, 248, 0.25);
+}
+
+.nav-title h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.2;
+}
+
+.nav-subtitle {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.select-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.select-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--brand-primary);
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+.exec-select {
+    appearance: none;
+    background: #0F172A;
+    border: 1px solid var(--border-color);
+    padding: 8px 16px 8px 34px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-main);
+    cursor: pointer;
+    transition: border-color 0.15s ease;
+}
+
+.exec-select:hover {
+    border-color: var(--brand-primary);
+}
+
+.btn-outline {
+    background: #0F172A;
+    border: 1px solid var(--border-color);
+    color: var(--text-light);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.15s ease;
+}
+
+.btn-outline:hover {
+    background: var(--bg-surface-hover);
+    color: var(--text-main);
+}
+
+/* Dashboard Body */
+.dashboard-body {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 28px 32px 40px;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 24px;
+}
+
+.page-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.page-description {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-top: 4px;
+}
+
+.system-status {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #34D399;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid rgba(16, 185, 129, 0.3);
+    padding: 6px 14px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-indicator {
+    width: 7px;
+    height: 7px;
+    background-color: #34D399;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #34D399;
+}
+
+/* KPI Cards Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+    margin-bottom: 28px;
+}
+
+.metric-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.metric-card.border-danger { border-top: 3px solid #EF4444; }
+.metric-card.border-primary { border-top: 3px solid #38BDF8; }
+.metric-card.border-success { border-top: 3px solid #10B981; }
+
+.metric-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+}
+
+.metric-value {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: var(--text-main);
+    margin: 6px 0 2px;
+}
+
+.metric-subtext {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.metric-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+}
+
+.icon-danger { background: rgba(239, 68, 68, 0.15); color: #FCA5A5; }
+.icon-primary { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
+.icon-success { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+
+/* Table Section */
+.table-section {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+    overflow: hidden;
+}
+
+.table-header-bar {
+    padding: 18px 24px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.table-title h3 {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-main);
+    display: inline-block;
+    margin-right: 10px;
+}
+
+.count-pill {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-light);
+    border: 1px solid var(--border-color);
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+/* Executive Table */
+.table-container {
+    overflow-x: auto;
+}
+
+.exec-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+}
+
+.exec-table th {
+    background: #0F172A;
+    padding: 14px 22px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--text-light);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.exec-table td {
+    padding: 18px 22px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.92rem;
+    vertical-align: middle;
+}
+
+.exec-table tbody tr {
+    transition: background-color 0.15s ease, opacity 0.3s ease, transform 0.3s ease;
+}
+
+.exec-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.exec-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.exec-table tbody tr.removing {
+    opacity: 0;
+    transform: translateY(-10px);
+}
+
+/* Status Badges */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.badge-roja { background: var(--status-red-bg); color: var(--status-red-text); border: 1px solid var(--status-red-border); }
+.badge-amarilla { background: var(--status-yellow-bg); color: var(--status-yellow-text); border: 1px solid var(--status-yellow-border); }
+.badge-morada { background: var(--status-purple-bg); color: var(--status-purple-text); border: 1px solid var(--status-purple-border); }
+
+.item-title {
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 4px;
+}
+
+.item-subtext {
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+.recommendation-inv {
+    color: #F1F5F9;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+
+.recommendation-staff {
+    color: #38BDF8;
+    font-size: 0.85rem;
+}
+
+/* Action Button */
+.btn-action {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: #FFFFFF;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.btn-action:hover {
+    background: linear-gradient(135deg, #34D399, #10B981);
+    box-shadow: 0 6px 18px rgba(16, 185, 129, 0.4);
+    transform: translateY(-1px);
+}
+
+.btn-action:active {
+    transform: scale(0.98);
+}
+
+/* Empty State */
+.empty-row td {
+    padding: 60px 20px;
+    text-align: center;
+}
+
+.empty-state-box {
+    max-width: 420px;
+    margin: 0 auto;
+}
+
+.empty-icon {
+    font-size: 3rem;
+    color: #34D399;
+    margin-bottom: 12px;
+}
+
+.empty-state-box h4 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-main);
+    margin-bottom: 6px;
+}
+
+.empty-state-box p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+}
+
+/* Toast Notifications */
+.toast-wrapper {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.toast-msg {
+    background: #0F172A;
+    border: 1px solid #10B981;
+    color: #FFFFFF;
+    padding: 14px 20px;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    animation: slideUp 0.25s ease-out forwards;
+}
+
+.toast-msg i {
+    color: #34D399;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
