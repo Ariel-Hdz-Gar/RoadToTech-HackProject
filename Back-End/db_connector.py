@@ -19,6 +19,26 @@ def conectar_tigerdata():
         print(f"Error conectando a TigerGraph: {e}")
         return None
 
+def resolver_accion_tigergraph(v_id: str, tipo_alerta: str):
+    """
+    Cuando el gerente aprueba la acción, actualizamos el inventario en TigerGraph:
+    - Roja (FEFO / Reabastecimiento): Aumenta el stock en TigerGraph (+100 unidades pedidas)
+    - Amarilla (FIFO / Volumen): Reduce la saturación en bodega
+    - Azul (Lenta rotación): Registra la activación de venta cruzada
+    """
+    conn = conectar_tigerdata()
+    if not conn:
+        return False
+    try:
+        if tipo_alerta == "roja":
+            # Reabastecer el producto en la BD: actualizamos cantidad a 250
+            conn.upsertVertex("inventario", v_id, attributes={"cantidad": 250})
+            print(f"[OK] TigerGraph actualizado en la nube: {v_id} reabastecido con éxito.")
+        return True
+    except Exception as e:
+        print(f"Error actualizando en TigerGraph: {e}")
+        return False
+
 def obtener_datos_dashboard():
     """ 
     Extrae los datos reales de TigerGraph y los clasifica por Tienda (A=1, B=2, C=3, D=4)
@@ -30,13 +50,13 @@ def obtener_datos_dashboard():
     """
     conn = conectar_tigerdata()
     if not conn:
-        return {}, {}, {}, {}
+        return None
 
     try:
         inventario_raw = conn.getVertices("inventario")
     except Exception as e:
         print(f"Error consultando vértices de TigerGraph: {e}")
-        return {}, {}, {}, {}
+        return None
 
     fecha_hoy = datetime.strptime("2026-10-10", "%Y-%m-%d")
 

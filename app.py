@@ -9,9 +9,10 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "Back-End"))
 from motor_reglas import LotePerecedero, Bodega, LoteEstancado, EventoLocal, MotorAlertas
 
 try:
-    from db_connector import obtener_datos_dashboard
+    from db_connector import obtener_datos_dashboard, resolver_accion_tigergraph
 except Exception:
     obtener_datos_dashboard = None
+    resolver_accion_tigergraph = None
 
 import mock_db
 
@@ -136,6 +137,11 @@ def approve_alert():
         if len(nuevos_items) < len(items):
             suc_items[categoria] = nuevos_items
             removido = True
+            
+            # Si TigerGraph está conectado, actualizamos el vértice en la base de datos viva
+            if resolver_accion_tigergraph:
+                tipo = "roja" if categoria == "perecederos" else ("amarilla" if categoria == "bodegas" else ("azul" if categoria == "estancados" else "morada"))
+                resolver_accion_tigergraph(alert_id, tipo)
             break
 
     if removido:
