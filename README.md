@@ -53,3 +53,19 @@ Para correr el proyecto en cualquier computadora (Windows/Mac/Linux), sigue esto
    python app.py
    ``
    *El servidor iniciará en el puerto 5000 indicando la conexión exitosa.*
+
+## ?? Guía para la Demostración (Hackathon Demo)
+
+Para ver el ciclo completo de omnicanalidad operando en tiempo real:
+
+1. **Abre el Dashboard Gerencial (B2B):**
+   Ve a [http://127.0.0.1:5000](http://127.0.0.1:5000) en tu navegador principal.
+2. **Abre la App del Cliente (B2C):**
+   En una nueva ventana o pestaña secundaria, entra a [http://127.0.0.1:5000/cliente](http://127.0.0.1:5000/cliente). Emula la pantalla de un celular.
+3. **El Flujo:**
+   - Selecciona la misma tienda en ambas pantallas (Ej. *San Pedro*).
+   - En el Dashboard Gerencial, haz clic en **Aprobar Acción** en una de las alertas (ej. Leche o Jamón).
+   - **¡Magia!** Observa cómo la tarjeta de impacto financiero suma el dinero rescatado en el dashboard, mientras que la App del Cliente recibe **instantáneamente** una Push Notification con la oferta flash.
+
+---
+*Desarrollado con pasión para el Retail Tech Challenge ??*
