@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RetailPulse - App Cliente</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-body: #0F172A;
+            --bg-card: #1E293B;
+            --text-main: #F8FAFC;
+            --text-light: #94A3B8;
+            --brand: #38BDF8;
+            --border: #334155;
+            --accent: #10B981;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body { background: #000; display: flex; justify-content: center; height: 100vh; overflow: hidden; }
+        
+        .phone-container {
+            width: 100%;
+            max-width: 414px; /* iPhone Max width */
+            height: 100%;
+            background: var(--bg-body);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 40px rgba(0,0,0,0.5);
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+        }
+
+        /* App Header */
+        .app-header {
+            padding: 24px 20px 16px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            text-align: center;
+        }
+        .app-logo {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .app-logo i { color: var(--brand); }
+        
+        .store-selector {
+            background: #0F172A;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            width: 100%;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+        }
+        .selector-wrapper { position: relative; }
+        .selector-wrapper::after {
+            content: '\f107';
+            font-family: 'FontAwesome';
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-light);
+            pointer-events: none;
+        }
+
+        /* Content Area */
+        .app-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-light);
+        }
+        .empty-state i {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            color: var(--border);
+        }
+
+        /* Promo Cards */
+        .promo-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            position: relative;
+            overflow: hidden;
+            animation: slideIn 0.3s ease-out forwards;
+        }
+        .promo-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .promo-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+        .promo-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+        }
+        .promo-product {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+        .promo-badge {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--accent);
+            font-size: 0.7rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-left: auto;
+        }
+        .promo-desc {
+            font-size: 0.9rem;
+            color: var(--text-light);
+            margin-bottom: 12px;
+        }
+        .btn-claim {
+            width: 100%;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--brand);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-claim:active {
+            background: rgba(56, 189, 248, 0.2);
+        }
+
+        /* Bottom Nav */
+        .bottom-nav {
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0 24px;
+        }
+        .nav-item {
+            color: var(--text-light);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        .nav-item.active { color: var(--brand); }
+        .nav-item i { font-size: 1.2rem; }
+
+    </style>
+</head>
+<body>
+    <div class="phone-container">
+        <!-- Header -->
+        <div class="app-header">
+            <div class="app-logo">
+                <i class="fa-solid fa-basket-shopping"></i> Softek Rewards
+            </div>
+            <div class="selector-wrapper">
+                <select id="branchSelect" class="store-selector">
+                    <option value="Tienda A - Monterrey Norte 📍">Mi tienda: Monterrey Norte</option>
+                    <option value="Tienda B - Monterrey Sur 📍">Mi tienda: Monterrey Sur</option>
+                    <option value="Tienda C - Centro 📍">Mi tienda: Centro</option>
+                    <option value="Tienda D - San Pedro 📍">Mi tienda: San Pedro</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="app-content">
+            <div class="section-title">Ofertas Flash Exclusivas</div>
+            <div id="promoContainer">
+                <div class="empty-state">
+                    <i class="fa-solid fa-bell-slash"></i>
+                    <p>No hay ofertas flash activas en tu sucursal por el momento.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item">
+                <i class="fa-solid fa-house"></i>
+                Inicio
+            </div>
+            <div class="nav-item active">
+                <i class="fa-solid fa-tag"></i>
+                Ofertas
+            </div>
+            <div class="nav-item">
+                <i class="fa-solid fa-qrcode"></i>
+                Escanear
+            </div>
+            <div class="nav-item">
+                <i class="fa-solid fa-user"></i>
+                Perfil
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const branchSelect = document.getElementById('branchSelect');
+            const promoContainer = document.getElementById('promoContainer');
+            
+            let currentBranch = branchSelect.value;
+            let currentPromos = [];
+
+            // Fetch promos from Backend
+            async function fetchPromos() {
+                try {
+                    const encodedBranch = encodeURIComponent(currentBranch);
+                    const response = await fetch(`/api/promos/${encodedBranch}`);
+                    const data = await response.json();
+                    
+                    // Solo renderizar si cambió algo para no parpadear
+                    if (JSON.stringify(data.promos) !== JSON.stringify(currentPromos)) {
+                        currentPromos = data.promos;
+                        renderPromos();
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                }
+            }
+
+            function renderPromos() {
+                if (!currentPromos || currentPromos.length === 0) {
+                    promoContainer.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fa-solid fa-bell-slash"></i>
+                            <p>No hay ofertas flash activas en tu sucursal por el momento.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                currentPromos.forEach(promo => {
+                    // Texto persuasivo (Call To Action de marketing)
+                    let copyAtractivo = `¡Solo por hoy! Aprovecha un increíble <strong>${promo.oferta}</strong>. ¡Apúrate antes de que se agote en piso de venta!`;
+
+                    html += `
+                        <div class="promo-card">
+                            <div class="promo-header">
+                                <div class="promo-icon"><i class="fa-solid fa-bolt"></i></div>
+                                <div class="promo-product">¡${promo.producto} en Rebaja!</div>
+                                <div class="promo-badge">NUEVO</div>
+                            </div>
+                            <div class="promo-desc">${copyAtractivo}</div>
+                            <button class="btn-claim" onclick="this.innerHTML='<i class=\\'fa-solid fa-check\\'></i> Agregado al carrito'; this.style.background='rgba(16, 185, 129, 0.2)'; this.style.color='#10B981'; this.style.borderColor='rgba(16, 185, 129, 0.4)';">¡Lo quiero ahora!</button>
+                        </div>
+                    `;
+                });
+                promoContainer.innerHTML = html;
+            }
+
+            branchSelect.addEventListener('change', (e) => {
+                currentBranch = e.target.value;
+                currentPromos = []; // reset state to force render
+                fetchPromos();
+            });
+
+            // Poll every 2 seconds
+            setInterval(fetchPromos, 2000);
+            fetchPromos();
+        });
+    </script>
+</body>
+</html>

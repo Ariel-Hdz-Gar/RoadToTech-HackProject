@@ -52,53 +52,56 @@ sincronizar_con_tigergraph()
 state_data = copy.deepcopy(INITIAL_STORE_DATA)
 executed_count = 0
 total_saved_mxn = 0.0
+total_original_loss_mxn = 0.0
+active_promos_data = {1: [], 2: [], 3: [], 4: []}
 
 def calcular_alertas_sucursal(suc_id: int):
+    # ... (no changes to this function, keeping it as is) ...
     suc_items = state_data.get(suc_id, {"perecederos": [], "bodegas": [], "estancados": [], "eventos": []})
     alertas = []
 
-    # 1. Alerta Roja (FEFO / Perecederos)
     for item in suc_items.get("perecederos", []):
         try:
             al = MotorAlertas.procesar_alerta_roja(LotePerecedero(**item))
             if al:
                 al["id"] = item["id_registro"]
                 al["critical"] = True
+                al["producto"] = item["producto"]
                 alertas.append(al)
-        except Exception as e:
+        except Exception:
             pass
 
-    # 2. Alerta Amarilla (FIFO / Bodega)
     for item in suc_items.get("bodegas", []):
         try:
             al = MotorAlertas.procesar_alerta_amarilla(Bodega(**item))
             if al:
                 al["id"] = item["id_registro"]
                 al["critical"] = False
+                al["producto"] = item["producto"]
                 alertas.append(al)
-        except Exception as e:
+        except Exception:
             pass
 
-    # 3. Alerta Azul (Estancados / Semiperecederos)
     for item in suc_items.get("estancados", []):
         try:
             al = MotorAlertas.procesar_alerta_azul(LoteEstancado(**item))
             if al:
                 al["id"] = item["id_registro"]
                 al["critical"] = False
+                al["producto"] = item["producto"]
                 alertas.append(al)
-        except Exception as e:
+        except Exception:
             pass
 
-    # 4. Alerta Morada (Demanda Predictiva / Eventos)
     for item in suc_items.get("eventos", []):
         try:
             al = MotorAlertas.procesar_alerta_morada(EventoLocal(**item))
             if al:
                 al["id"] = item["id_registro"]
                 al["critical"] = False
+                al["producto"] = item["producto"]
                 alertas.append(al)
-        except Exception as e:
+        except Exception:
             pass
 
     return alertas
@@ -113,21 +116,35 @@ def generar_todas_alertas():
 def index():
     return render_template("index.html")
 
+@app.route("/cliente")
+def cliente():
+    return render_template("cliente.html")
+
 @app.route("/api/alerts", methods=["GET"])
 def get_alerts():
     return jsonify({
         "alerts": generar_todas_alertas(),
         "executed_count": executed_count,
-        "total_saved_mxn": round(total_saved_mxn, 2)
+        "total_saved_mxn": round(total_saved_mxn, 2),
+        "total_original_loss_mxn": round(total_original_loss_mxn, 2)
     })
+
+@app.route("/api/promos/<branch_name>", methods=["GET"])
+def get_promos(branch_name):
+    id_suc = BRANCH_MAP.get(branch_name, 1)
+    promos = active_promos_data.get(id_suc, [])
+    return jsonify({"promos": promos})
 
 @app.route("/api/alerts/approve", methods=["POST"])
 def approve_alert():
-    global executed_count, total_saved_mxn
+    global executed_count, total_saved_mxn, total_original_loss_mxn
     data = request.get_json() or {}
     branch_name = data.get("branch")
     alert_id = str(data.get("alert_id", ""))
     saved_amount = float(data.get("saved_amount", 0.0))
+    original_loss = float(data.get("original_loss_amount", 0.0))
+    promo_text = data.get("promo_text", "")
+    producto_name = data.get("producto", "")
 
     id_suc = BRANCH_MAP.get(branch_name, 1)
     suc_items = state_data.get(id_suc, {})
@@ -136,12 +153,32 @@ def approve_alert():
 
     for categoria in ["perecederos", "bodegas", "estancados", "eventos"]:
         items = suc_items.get(categoria, [])
-        nuevos_items = [i for i in items if str(i.get("id_registro", "")) != alert_id]
-        if len(nuevos_items) < len(items):
+        item_to_remove = next((i for i in items if str(i.get("id_registro", "")) == alert_id), None)
+        
+        if item_to_remove:
+            if not producto_name:
+                producto_name = item_to_remove.get("producto", "")
+                
+            if not promo_text:
+                try:
+                    if categoria == "perecederos":
+                        al = MotorAlertas.procesar_alerta_roja(LotePerecedero(**item_to_remove))
+                    elif categoria == "bodegas":
+                        al = MotorAlertas.procesar_alerta_amarilla(Bodega(**item_to_remove))
+                    elif categoria == "estancados":
+                        al = MotorAlertas.procesar_alerta_azul(LoteEstancado(**item_to_remove))
+                    else:
+                        al = MotorAlertas.procesar_alerta_morada(EventoLocal(**item_to_remove))
+                    
+                    if al:
+                        promo_text = al.get("recomendacion_inventario", "")
+                except Exception:
+                    pass
+
+            nuevos_items = [i for i in items if str(i.get("id_registro", "")) != alert_id]
             suc_items[categoria] = nuevos_items
             removido = True
             
-            # Si TigerGraph está conectado, actualizamos el vértice en la base de datos viva
             if resolver_accion_tigergraph:
                 tipo = "roja" if categoria == "perecederos" else ("amarilla" if categoria == "bodegas" else ("azul" if categoria == "estancados" else "morada"))
                 resolver_accion_tigergraph(alert_id, tipo)
@@ -150,25 +187,39 @@ def approve_alert():
     if removido:
         executed_count += 1
         total_saved_mxn += saved_amount
+        total_original_loss_mxn += original_loss
+        
+        # Registrar la promo para el cliente final
+        if promo_text and producto_name:
+            import uuid
+            active_promos_data[id_suc].insert(0, {
+                "id": str(uuid.uuid4()),
+                "producto": producto_name,
+                "oferta": promo_text
+            })
 
     return jsonify({
         "success": True,
         "alerts": generar_todas_alertas(),
         "executed_count": executed_count,
-        "total_saved_mxn": round(total_saved_mxn, 2)
+        "total_saved_mxn": round(total_saved_mxn, 2),
+        "total_original_loss_mxn": round(total_original_loss_mxn, 2)
     })
 
 @app.route("/api/alerts/reset", methods=["POST"])
 def reset_alerts():
-    global state_data, executed_count, total_saved_mxn
+    global state_data, executed_count, total_saved_mxn, total_original_loss_mxn, active_promos_data
     state_data = copy.deepcopy(INITIAL_STORE_DATA)
     executed_count = 0
     total_saved_mxn = 0.0
+    total_original_loss_mxn = 0.0
+    active_promos_data = {1: [], 2: [], 3: [], 4: []}
     return jsonify({
         "success": True,
         "alerts": generar_todas_alertas(),
         "executed_count": executed_count,
-        "total_saved_mxn": 0.0
+        "total_saved_mxn": 0.0,
+        "total_original_loss_mxn": 0.0
     })
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ from pydantic import BaseModel
 
 class LotePerecedero(BaseModel):
     id_registro: str
+    id_sucursal: int
     producto: str
     dias_para_caducar: int
     stock_actual: int
@@ -11,83 +12,110 @@ class LotePerecedero(BaseModel):
 
 class Bodega(BaseModel):
     id_registro: str
+    id_sucursal: int
+    producto: str
     volumen_total_m3: float
     volumen_ocupado_m3: float
     producto_estancado: str
 
 class LoteEstancado(BaseModel):
     id_registro: str
+    id_sucursal: int
     producto: str
     dias_sin_vender: int
     producto_cruzado: str
 
 class EventoLocal(BaseModel):
     id_registro: str
+    id_sucursal: int
+    producto: str
     nombre_evento: str
     afluencia_estimada: int
     dias_para_evento: int
 
+REGLAS_EXCEL = {
+    1: { 
+        "Leche": {"tipo": "roja", "estado": "🚨 Roja (Caduca 05-Nov)", "accion": "Descuento 15% (Promo: $30.18)", "rescate_u": 19.2338449, "ingreso": 580.38, "perdida_original": 652.37, "just": "Merma mitigada al 85.5% con precisión de 7 Cifras Sig (E_a < 0.5e-5)."},
+        "Jamón": {"tipo": "roja", "estado": "🚨 Roja (Caduca 11-Nov)", "accion": "Descuento 20% (Promo: $40.40)", "rescate_u": 10.9907685, "ingreso": 444.03, "perdida_original": 514.18, "just": "Merma mitigada al 85.5% con precisión de 7 Cifras Sig (E_a < 0.5e-5)."}
+    },
+    2: { 
+        "Donas": {"tipo": "roja", "estado": "🚨 Roja (Caduca 26-Nov)", "accion": "Descuento 40% (Promo: $18.00)", "rescate_u": 10.8378535, "ingreso": 195.08, "perdida_original": 202.81, "just": "Merma mitigada al 85.5% con precisión de 7 Cifras Sig (E_a < 0.5e-5)."},
+        "Atún": {"tipo": "amarilla", "estado": "🟡 Amarilla (Estancado)", "accion": "Descuento 33% (Promo: $14.74)", "rescate_u": 1.6056079, "ingreso": 23.67, "perdida_original": 18.77, "just": "ÉXITO: El ingreso superó la pérdida (Neto Positivo). Rescate a 7 CS (E_a < 0.5e-5)."}
+    },
+    3: { 
+        "Paketaxo": {"tipo": "amarilla", "estado": "🟡 Amarilla (Bodega full)", "accion": "Descuento 33% (Promo: $40.20)", "rescate_u": 10.9907685, "ingreso": 441.83, "perdida_original": 385.64, "just": "ÉXITO: El ingreso superó la pérdida (Neto Positivo). Rescate a 7 CS (E_a < 0.5e-5)."},
+        "Cerveza": {"tipo": "azul", "estado": "🔵 Azul (Post-Evento)", "accion": "Descuento 20% (Promo: $76.00)", "rescate_u": 8.719343, "ingreso": 662.67, "perdida_original": 662.87, "just": "Merma mitigada al 85.5% con precisión de 7 Cifras Sig (E_a < 0.5e-5)."}
+    },
+    4: { 
+        "Jamón": {"tipo": "roja", "estado": "🚨 Roja (Caduca 15-Nov)", "accion": "Descuento 20% (Promo: $40.40)", "rescate_u": 19.2118633, "ingreso": 776.16, "perdida_original": 898.80, "just": "Merma mitigada al 85.5% con precisión de 7 Cifras Sig (E_a < 0.5e-5)."},
+        "Donas": {"tipo": "amarilla", "estado": "🟡 Amarilla (Estancado)", "accion": "Descuento 30% (Promo: $21.00)", "rescate_u": 6.1548304, "ingreso": 129.25, "perdida_original": 115.17, "just": "ÉXITO: El ingreso superó la pérdida (Neto Positivo). Rescate a 7 CS (E_a < 0.5e-5)."}
+    }
+}
+
 class MotorAlertas:
     @staticmethod
+    def _obtener_datos_excel(suc_id, prod, tipo_esperado):
+        tienda_datos = REGLAS_EXCEL.get(suc_id, {})
+        prod_datos = tienda_datos.get(prod)
+        if prod_datos and prod_datos["tipo"] == tipo_esperado:
+            return prod_datos
+        return None
+
+    @staticmethod
     def procesar_alerta_roja(lote: LotePerecedero) -> dict | None:
-        # Alerta por caducidad próxima o por punto de reorden alcanzado
-        if lote.dias_para_caducar <= 3 or lote.stock_actual <= lote.punto_reorden:
-            # Modelo de Rescate Financiero FEFO:
-            # Precio venta unitario aprox: $35.5 MXN (Leche) / $50.5 MXN (Jamón)
-            # Tasa de liquidación acelerada con descuento: recupera el 72% del valor que se iría a merma total ($0)
-            precio_unitario = 35.5 if "Leche" in lote.producto else 50.5
-            ahorro_mxn = round(lote.stock_actual * precio_unitario * 0.72, 2)
-            
+        datos = MotorAlertas._obtener_datos_excel(lote.id_sucursal, lote.producto, "roja")
+        if datos:
             return {
                 "id_registro": lote.id_registro,
                 "tipo_alerta": "roja",
-                "titulo": "Reabastecimiento / Rescate (FEFO)",
-                "descripcion": f"'{lote.producto}' caduca en {lote.dias_para_caducar} días o stock actual ({lote.stock_actual}) tocó punto de reorden ({lote.punto_reorden}).",
-                "recomendacion_inventario": "Emitir orden de compra al almacén central por lote de 26 días.",
-                "recomendacion_personal": "Revisar espacio en anaquel.",
-                "ahorro_recuperado_mxn": ahorro_mxn,
-                "detalle_financiero": f"Evita ${ahorro_mxn:,.2f} MXN en merma directa (pérdida total evitada al 72%).",
-                "texto_boton": "Aprobar Pedido a Almacén",
+                "titulo": datos["estado"],
+                "descripcion": f"Producto '{lote.producto}' caduca pronto. ROP fijado a {lote.punto_reorden}.",
+                "recomendacion_inventario": datos["accion"],
+                "recomendacion_personal": f"Rescatadas: {datos['rescate_u']} u.",
+                "accion_personal": "Instrucción a personal: Etiquetar con descuento y mover a zona de liquidación.",
+                "ahorro_recuperado_mxn": datos["ingreso"],
+                "perdida_original_mxn": datos.get("perdida_original", 0.0),
+                "detalle_financiero": datos["just"],
+                "texto_boton": "Aprobar Descuento",
                 "endpoint_aprobacion": f"/api/v1/ejecutar-accion/roja/{lote.id_registro}"
             }
         return None
 
     @staticmethod
     def procesar_alerta_amarilla(bodega: Bodega) -> dict | None:
-        porcentaje = (bodega.volumen_ocupado_m3 / bodega.volumen_total_m3) * 100
-        if porcentaje > 80.0:
-            # Costo logístico por bloqueo de descarga / camión en espera: ~$1,850 MXN por incidente
-            ahorro_mxn = 1850.00
+        datos = MotorAlertas._obtener_datos_excel(bodega.id_sucursal, bodega.producto, "amarilla")
+        if datos:
             return {
                 "id_registro": bodega.id_registro,
                 "tipo_alerta": "amarilla",
-                "titulo": "Saturación de Espacio en Bodega",
-                "descripcion": f"Bodega al {porcentaje:.1f}% de capacidad por espacio físico.",
-                "recomendacion_inventario": f"Acelerar rotación de {bodega.producto_estancado}.",
-                "recomendacion_personal": "Reordenar pasillos.",
-                "ahorro_recuperado_mxn": ahorro_mxn,
-                "detalle_financiero": f"Ahorra ${ahorro_mxn:,.2f} MXN evitando penalización de descarga y sobrecosto de flete.",
-                "texto_boton": "Optimizar Espacio",
+                "titulo": datos["estado"],
+                "descripcion": f"Producto '{bodega.producto}' estancado/saturando. ROP excedido o estancado.",
+                "recomendacion_inventario": datos["accion"],
+                "recomendacion_personal": f"Rescatadas: {datos['rescate_u']} u.",
+                "accion_personal": "Instrucción a personal: Armar exhibición frontal o cabecera de pasillo.",
+                "ahorro_recuperado_mxn": datos["ingreso"],
+                "perdida_original_mxn": datos.get("perdida_original", 0.0),
+                "detalle_financiero": datos["just"],
+                "texto_boton": "Aprobar Descuento",
                 "endpoint_aprobacion": f"/api/v1/ejecutar-accion/amarilla/{bodega.id_registro}"
             }
         return None
 
     @staticmethod
     def procesar_alerta_azul(lote: LoteEstancado) -> dict | None:
-        if lote.dias_sin_vender > 10:
-            # Descongelamiento de Capital de Trabajo:
-            # Un lote de 200 paquetes a $30 MXN inmoviliza $6,000 MXN.
-            # Venta cruzada convierte 65% de inventario ocioso en liquidez activa inmediata.
-            ahorro_mxn = round(200 * 30.0 * 0.65, 2)
+        datos = MotorAlertas._obtener_datos_excel(lote.id_sucursal, lote.producto, "azul")
+        if datos:
             return {
                 "id_registro": lote.id_registro,
                 "tipo_alerta": "azul",
-                "titulo": "Rotación Lenta de Semiperecederos",
-                "descripcion": f"'{lote.producto}' lleva {lote.dias_sin_vender} días con baja rotación.",
-                "recomendacion_inventario": f"Venta cruzada: Descuento al combinar con {lote.producto_cruzado}.",
-                "recomendacion_personal": "N/A",
-                "ahorro_recuperado_mxn": ahorro_mxn,
-                "detalle_financiero": f"Recupera ${ahorro_mxn:,.2f} MXN en flujo de caja liberando capital inmovilizado.",
+                "titulo": datos["estado"],
+                "descripcion": f"Rotación post-evento de '{lote.producto}'.",
+                "recomendacion_inventario": datos["accion"],
+                "recomendacion_personal": f"Rescatadas: {datos['rescate_u']} u.",
+                "accion_personal": "Instrucción a personal: Colocar junto a productos complementarios (Venta cruzada).",
+                "ahorro_recuperado_mxn": datos["ingreso"],
+                "perdida_original_mxn": datos.get("perdida_original", 0.0),
+                "detalle_financiero": datos["just"],
                 "texto_boton": "Aplicar Venta Cruzada",
                 "endpoint_aprobacion": f"/api/v1/ejecutar-accion/azul/{lote.id_registro}"
             }
@@ -95,30 +123,5 @@ class MotorAlertas:
 
     @staticmethod
     def procesar_alerta_morada(evento: EventoLocal) -> dict | None:
-        if evento.afluencia_estimada > 0 and evento.dias_para_evento <= 3:
-            clientes_tienda = evento.afluencia_estimada * 0.12
-            tasa_llegada_hora = clientes_tienda / 3.0
-            cajeros_calculados = math.ceil(tasa_llegada_hora / 20.0)
-            cajeros = min(max(1, cajeros_calculados), 3)
-
-            # Ganancia neta capturada por evento:
-            # Ticket promedio por cliente en evento: $125 MXN.
-            # Ganancia bruta estimada: clientes_tienda * $125
-            # Menos costo del turno parcial del cajero (4h * $90 MXN/h = $360 MXN):
-            ventas_capturadas = clientes_tienda * 125.0
-            costo_cajero = cajeros * 360.0
-            ahorro_mxn = round(ventas_capturadas - costo_cajero, 2)
-
-            return {
-                "id_registro": evento.id_registro,
-                "tipo_alerta": "morada",
-                "titulo": "Demanda Predictiva por Evento",
-                "descripcion": f"Evento: {evento.nombre_evento} en {evento.dias_para_evento} días.",
-                "recomendacion_inventario": "Sobresurtir Cerveza de 6 y Atún.",
-                "recomendacion_personal": f"Habilitar {cajeros} cajero(s) de refuerzo (Turno parcial de 4h en horario pico del evento).",
-                "ahorro_recuperado_mxn": ahorro_mxn,
-                "detalle_financiero": f"Genera ${ahorro_mxn:,.2f} MXN en ventas netas incrementales (descontando nómina de apoyo).",
-                "texto_boton": "Aprobar Recursos Extra",
-                "endpoint_aprobacion": f"/api/v1/ejecutar-accion/morada/{evento.id_registro}"
-            }
+        # Si hubiera alguna morada explícita en Excel. En el recorte que extraje, no había, pero podemos dejarla por si acaso.
         return None

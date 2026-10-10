@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let alertsData = {};
     let executedCount = 0;
     let totalSavedMxn = 0.0;
+    let totalOriginalLossMxn = 0.0;
 
     // Fetch alerts from Flask API (connected to Ariel's backend)
     async function loadAlerts() {
@@ -23,6 +24,7 @@ document.addEventListener('DOMContentLoaded', () => {
             alertsData = data.alerts;
             executedCount = data.executed_count || 0;
             totalSavedMxn = data.total_saved_mxn || 0.0;
+            totalOriginalLossMxn = data.total_original_loss_mxn || 0.0;
             renderDashboard();
         } catch (error) {
             console.error('Error fetching alerts:', error);
@@ -44,6 +46,17 @@ document.addEventListener('DOMContentLoaded', () => {
         if (kpiSaved) {
             kpiSaved.textContent = `$${totalSavedMxn.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
+        
+        // Update Modal Data
+        const compLoss = document.getElementById('compLoss');
+        const compGain = document.getElementById('compGain');
+        if (compLoss) {
+            compLoss.textContent = `-$${totalOriginalLossMxn.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+        if (compGain) {
+            compGain.textContent = `+$${totalSavedMxn.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
+
         alertsCountBadge.textContent = `${pendingCount} activas`;
 
         // Clear table body
@@ -88,7 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
             // Staffing recommendation text formatting
             let staffHtml = '';
             if (alert.recomendacion_personal && alert.recomendacion_personal !== 'N/A') {
-                staffHtml = `<div class="recommendation-staff"><i class="fa-solid fa-user-check"></i> Personal: ${alert.recomendacion_personal}</div>`;
+                staffHtml += `<div class="recommendation-staff"><i class="fa-solid fa-chart-line"></i> Proyección: ${alert.recomendacion_personal}</div>`;
+            }
+            if (alert.accion_personal) {
+                staffHtml += `<div class="recommendation-staff" style="color: #94A3B8; margin-top: 4px;"><i class="fa-solid fa-user-tag"></i> ${alert.accion_personal}</div>`;
             }
 
             // Financial impact badge formatting
@@ -98,6 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const savedAmount = alert.ahorro_recuperado_mxn || 0.0;
+            const originalLoss = alert.perdida_original_mxn || 0.0;
+            const productName = alert.producto || 'Producto';
+            const promoText = alert.recomendacion_inventario || 'Oferta especial';
 
             tr.innerHTML = `
                 <td>${badgeHtml}</td>
@@ -111,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     ${finHtml}
                 </td>
                 <td style="text-align: center;">
-                    <button class="btn-action" onclick="approveAction('${alert.id}', '${escapeQuotes(alert.titulo)}', ${savedAmount})">
+                    <button class="btn-action" onclick="approveAction('${alert.id}', '${escapeQuotes(alert.titulo)}', ${savedAmount}, ${originalLoss}, '${escapeQuotes(promoText)}', '${escapeQuotes(productName)}')">
                         <i class="fa-solid fa-check"></i> ${alert.texto_boton || 'Aprobar Acción'}
                     </button>
                 </td>
@@ -125,8 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
         return str.replace(/'/g, "\\'").replace(/"/g, '&quot;');
     }
 
-    // Approve Action function
-    window.approveAction = async function(alertId, alertTitle, savedAmount = 0.0) {
+        // Approve Action function
+    window.approveAction = async function(alertId, alertTitle, savedAmount = 0.0, originalLoss = 0.0, promoText = '', productName = '') {
         const rowElement = document.getElementById(`row-${alertId}`);
         
         if (rowElement) {
@@ -137,7 +156,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/alerts/approve', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ branch: currentBranch, alert_id: alertId, saved_amount: savedAmount })
+                body: JSON.stringify({ 
+                    branch: currentBranch, 
+                    alert_id: alertId, 
+                    saved_amount: savedAmount, 
+                    original_loss_amount: originalLoss,
+                    promo_text: promoText,
+                    producto: productName
+                })
             });
             const resData = await response.json();
 
@@ -145,6 +171,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alertsData = resData.alerts;
                 executedCount = resData.executed_count;
                 totalSavedMxn = resData.total_saved_mxn || 0.0;
+                totalOriginalLossMxn = resData.total_original_loss_mxn || 0.0;
 
                 showToast(`Acción ejecutada: +$${savedAmount.toLocaleString('es-MX', {minimumFractionDigits: 2})} MXN rescatados`);
 
@@ -166,6 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 alertsData = resData.alerts;
                 executedCount = resData.executed_count;
                 totalSavedMxn = 0.0;
+                totalOriginalLossMxn = 0.0;
                 showToast('Datos del Motor Restablecidos');
                 renderDashboard();
             }
@@ -179,6 +207,13 @@ document.addEventListener('DOMContentLoaded', () => {
         currentBranch = e.target.value;
         renderDashboard();
     });
+
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
+            document.getElementById('impactModal').close();
+        });
+    }
 
     // Toast Notification Creator
     function showToast(message) {

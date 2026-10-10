@@ -1,10 +1,13 @@
+import os
 import pyTigerGraph as tg
 from datetime import datetime
+from dotenv import load_dotenv
 
-# Credenciales exactas y vivas del Workspace en TigerGraph Cloud Savanna v4
-HOST = "https://tg-093610e2-1857-4033-9a1d-cef73f96b292.tg-2635877100.i.tgcloud.io"
-GRAPHNAME = "tienda"
-SECRET = "0jujff12ddervneota0heiuf5sql1894"
+load_dotenv()
+
+HOST = os.getenv("TG_HOST", "https://tg-093610e2-1857-4033-9a1d-cef73f96b292.tg-2635877100.i.tgcloud.io")
+GRAPHNAME = os.getenv("TG_GRAPHNAME", "tienda")
+SECRET = os.getenv("TG_SECRET", "0jujff12ddervneota0heiuf5sql1894")
 
 def conectar_tigerdata():
     try:
@@ -20,63 +23,54 @@ def conectar_tigerdata():
         return None
 
 def resolver_accion_tigergraph(v_id: str, tipo_alerta: str):
-    """
-    Cuando el gerente aprueba la acción, actualizamos el inventario en TigerGraph:
-    - Roja (FEFO / Reabastecimiento): Reabastece inventario a 250 unidades
-    """
     conn = conectar_tigerdata()
     if not conn:
         return False
     try:
+        vertex = conn.getVerticesById("inventario", v_id)
+        if not vertex:
+            return False
+        
+        attr = vertex[0].get("attributes", {})
+        cant_actual = int(attr.get("cantidad", 100))
+        nueva_cantidad = cant_actual
+        
         if tipo_alerta == "roja":
-            conn.upsertVertex("inventario", v_id, attributes={"cantidad": 250})
-            print(f"[OK] TigerGraph actualizado en la nube: {v_id} reabastecido con exito.")
+            nueva_cantidad += 100
+            print(f"[OK] Reabastecimiento (Roja) aprobado: {v_id} incrementa a {nueva_cantidad}.")
+        elif tipo_alerta == "azul":
+            nueva_cantidad = max(0, nueva_cantidad - 20)
+            print(f"[OK] Venta cruzada (Azul) aprobada: {v_id} baja a {nueva_cantidad}.")
+        elif tipo_alerta == "morada":
+            nueva_cantidad += 150
+            print(f"[OK] Sobresurtido (Morada) aprobado: {v_id} incrementa a {nueva_cantidad}.")
+        elif tipo_alerta == "amarilla":
+            nueva_cantidad = max(0, nueva_cantidad - 30)
+            print(f"[OK] Optimización espacio (Amarilla) aprobada: {v_id} baja a {nueva_cantidad}.")
+            
+        conn.upsertVertex("inventario", v_id, attributes={"cantidad": nueva_cantidad})
         return True
     except Exception as e:
         print(f"Error actualizando en TigerGraph: {e}")
         return False
 
-# Perfiles de consumo diferenciados por sucursal
-PERFILES_SUCURSAL = {
-    1: {
-        "nombre": "Tienda A - Monterrey Norte (Zona Estadio)",
-        "evento": "Clásico Regio (Estadio Universitario)",
-        "afluencia": 600,
-        "dias_evento": 2,
-        "producto_evento": "Cerveza y Botanas",
-        "ropa": {"Leche": 90, "Jamón": 60, "Donas": 12, "Paketaxo": 10, "Atún": 20, "Cerveza": 15}
-    },
-    2: {
-        "nombre": "Tienda B - Monterrey Sur (Campus Universitario)",
-        "evento": "Semana de Exámenes y Feria Estudiantil",
-        "afluencia": 280,
-        "dias_evento": 1,
-        "producto_evento": "Café, Donas y Snacks",
-        "ropa": {"Leche": 70, "Jamón": 45, "Donas": 25, "Paketaxo": 12, "Atún": 18, "Cerveza": 8}
-    },
-    3: {
-        "nombre": "Tienda C - Centro (Macroplaza)",
-        "evento": "Festival de Música y Gastronomía",
-        "afluencia": 850,
-        "dias_evento": 3,
-        "producto_evento": "Bebidas Hidratantes, Cerveza y Enlatados",
-        "ropa": {"Leche": 80, "Jamón": 55, "Donas": 15, "Paketaxo": 8, "Atún": 30, "Cerveza": 22}
-    },
-    4: {
-        "nombre": "Tienda D - San Pedro (Distrito Financiero)",
-        "evento": "Cierre de Trimestre Corporativo y Exposiciones",
-        "afluencia": 320,
-        "dias_evento": 2,
-        "producto_evento": "Alimentos Preparados, Panadería y Lácteos",
-        "ropa": {"Leche": 110, "Jamón": 80, "Donas": 18, "Paketaxo": 6, "Atún": 25, "Cerveza": 10}
-    }
+# ROPs exactos sacados de Proyecto_Completo_RetailPulse_7CS.xlsx
+ROPS_EXACTOS = {
+    1: {"Leche": 97, "Jamón": 62, "Donas": 57, "Paketaxo": 78, "Atún": 57, "Cerveza": 176},
+    2: {"Leche": 69, "Jamón": 76, "Donas": 85, "Paketaxo": 92, "Atún": 78, "Cerveza": 120},
+    3: {"Leche": 55, "Jamón": 48, "Donas": 92, "Paketaxo": 155, "Atún": 36, "Cerveza": 337},
+    4: {"Leche": 111, "Jamón": 104, "Donas": 57, "Paketaxo": 120, "Atún": 92, "Cerveza": 225}
+}
+
+# Alertas activas por tienda en el Excel
+ALERTAS_ACTIVAS = {
+    1: {"Leche": "roja", "Jamón": "roja"},
+    2: {"Donas": "roja", "Atún": "amarilla"},
+    3: {"Paketaxo": "amarilla", "Cerveza": "azul"},
+    4: {"Jamón": "roja", "Donas": "amarilla"}
 }
 
 def obtener_datos_dashboard():
-    """ 
-    Extrae los datos reales de TigerGraph y los clasifica por Tienda (A=1, B=2, C=3, D=4)
-    con ROP dinámicos por perfil socioeconómico y eventos diferenciados.
-    """
     conn = conectar_tigerdata()
     if not conn:
         return None
@@ -87,7 +81,7 @@ def obtener_datos_dashboard():
         print(f"Error consultando vértices de TigerGraph: {e}")
         return None
 
-    fecha_hoy = datetime.strptime("2026-10-10", "%Y-%m-%d")
+    fecha_hoy = datetime.now()
     tiendas_map = {"A": 1, "B": 2, "C": 3, "D": 4}
 
     por_tienda = {
@@ -104,64 +98,43 @@ def obtener_datos_dashboard():
         partes = v_id.split("_")
         letra_tienda = partes[1] if len(partes) > 1 and partes[1] in tiendas_map else "A"
         suc_id = tiendas_map.get(letra_tienda, 1)
-        perfil = PERFILES_SUCURSAL.get(suc_id, PERFILES_SUCURSAL[1])
 
         prod = attr.get("nombre_producto", v_id)
         cant = int(attr.get("cantidad", 100))
         
+        # Obtenemos ROP
+        rop_sucursal = ROPS_EXACTOS.get(suc_id, {}).get(prod, 50)
+        
+        # Revisamos si este producto en esta tienda dispara alerta según el Excel
+        tipo_alerta = ALERTAS_ACTIVAS.get(suc_id, {}).get(prod)
+
         dias_caducidad = 3
-        if "fecha_caducidad" in attr and attr["fecha_caducidad"]:
-            try:
-                fecha_cad = datetime.strptime(str(attr["fecha_caducidad"])[:10], "%Y-%m-%d")
-                dias_caducidad = (fecha_cad - fecha_hoy).days
-            except Exception:
-                dias_caducidad = 2
 
-        # ROP específico para esta sucursal y producto
-        rop_sucursal = perfil["ropa"].get(prod, 50)
-
-        # 1. Alerta Roja: Perecederos críticos (Leche, Jamón)
-        if prod in ["Leche", "Jamón"]:
+        if tipo_alerta == "roja":
             por_tienda[suc_id]["perecederos"].append({
                 "id_registro": v_id,
                 "id_sucursal": suc_id,
                 "producto": prod,
-                "dias_para_caducar": max(1, dias_caducidad),
+                "dias_para_caducar": dias_caducidad,
                 "stock_actual": cant,
                 "punto_reorden": rop_sucursal
             })
-
-        # 2. Alerta Amarilla: Volumen y saturación (Paketaxo)
-        elif prod == "Paketaxo":
-            volumen_ocupado = min(96.0, 72.0 + (cant / 16.0))
+        elif tipo_alerta == "amarilla":
             por_tienda[suc_id]["bodegas"].append({
                 "id_registro": v_id,
                 "id_sucursal": suc_id,
+                "producto": prod,
                 "volumen_total_m3": 100.0,
-                "volumen_ocupado_m3": round(volumen_ocupado, 1),
-                "producto_estancado": f"Paketaxo ({cant} bolsas)"
+                "volumen_ocupado_m3": 90.0,
+                "producto_estancado": prod
             })
-
-        # 3. Alerta Azul: Semiperecederos lenta rotación (Donas)
-        elif prod == "Donas":
-            dias_lenta = 16 if suc_id in [1, 4] else 22
-            cruzado = "Café Americano" if suc_id == 2 else ("Leche Entera" if suc_id == 1 else "Bebida Caliente")
+        elif tipo_alerta == "azul":
             por_tienda[suc_id]["estancados"].append({
                 "id_registro": v_id,
                 "id_sucursal": suc_id,
-                "producto": "Donas de pan paquete",
-                "dias_sin_vender": dias_lenta,
-                "producto_cruzado": cruzado
-            })
-
-        # 4. Alerta Morada: Evento Predictivo diferenciado por ubicación
-        elif prod == "Cerveza":
-            por_tienda[suc_id]["eventos"].append({
-                "id_registro": v_id,
-                "id_sucursal": suc_id,
-                "nombre_evento": perfil["evento"],
-                "afluencia_estimada": perfil["afluencia"],
-                "dias_para_evento": perfil["dias_evento"]
+                "producto": prod,
+                "dias_sin_vender": 12,
+                "producto_cruzado": "Combo Promo"
             })
 
     return por_tienda

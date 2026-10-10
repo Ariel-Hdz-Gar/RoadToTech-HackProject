@@ -92,9 +92,9 @@
                 </div>
             </div>
 
-            <div class="metric-card border-money">
+            <div class="metric-card border-money" id="valorRescatadoCard" style="cursor: pointer;" title="Ver Análisis Financiero" onclick="document.getElementById('impactModal').showModal()">
                 <div class="metric-content">
-                    <span class="metric-label">Valor Rescatado</span>
+                    <span class="metric-label">Valor Rescatado <i class="fa-solid fa-circle-info" style="margin-left:5px; color:#94A3B8;"></i></span>
                     <div class="metric-value text-emerald" id="kpiSaved">$0.00</div>
                     <span class="metric-subtext">Ahorro y Ventas Netas (MXN)</span>
                 </div>
@@ -133,6 +133,30 @@
 
     <!-- Toast Notifications -->
     <div id="toastContainer" class="toast-wrapper"></div>
+
+    <!-- Comparative Modal (Non-intrusive) -->
+    <dialog id="impactModal" class="impact-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fa-solid fa-scale-balanced"></i> Análisis de Impacto Financiero</h3>
+                <button id="closeModalBtn" class="close-btn"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="comparison-row">
+                    <div class="comparison-col loss">
+                        <span class="comp-label">Pérdida Sin RetailPulse</span>
+                        <span class="comp-value" id="compLoss">-$0.00</span>
+                        <span class="comp-desc">Merma neta y capital estancado si no se toman acciones.</span>
+                    </div>
+                    <div class="comparison-col gain">
+                        <span class="comp-label">Valor Rescatado (Con App)</span>
+                        <span class="comp-value" id="compGain">+$0.00</span>
+                        <span class="comp-desc">Capital protegido y ventas incrementales recuperadas.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
 
     <script src="/static/js/main.js"></script>
 </body>
