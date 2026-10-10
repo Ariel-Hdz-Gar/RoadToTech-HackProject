@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RetailPulse ⚡ | Dashboard de Analítica Prescriptiva</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Navbar -->
+        <header class="navbar">
+            <div class="brand">
+                <div class="logo-icon"><i class="fa-solid fa-bolt"></i></div>
+                <div class="brand-text">
+                    <h1>RetailPulse ⚡</h1>
+                    <span>Analítica Prescriptiva para Retail</span>
+                </div>
+            </div>
+
+            <div class="navbar-controls">
+                <div class="branch-selector-wrapper">
+                    <i class="fa-solid fa-store branch-icon"></i>
+                    <select id="branchSelect" class="branch-select">
+                        <option value="Sucursal Monterrey Norte 📍">Sucursal Monterrey Norte 📍</option>
+                        <option value="Sucursal Monterrey Sur 📍">Sucursal Monterrey Sur 📍</option>
+                        <option value="Sucursal Centro 📍">Sucursal Centro 📍</option>
+                    </select>
+                </div>
+                <button id="resetBtn" class="btn-secondary" title="Reiniciar alertas para demostración">
+                    <i class="fa-solid fa-rotate"></i> Demo Reset
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="dashboard-content">
+            <!-- Header Hero Banner -->
+            <div class="hero-banner">
+                <div class="hero-info">
+                    <h2>Panel de Control del Gerente Prescriptivo</h2>
+                    <p>El sistema cruza inventarios y datos del entorno en tiempo real. Revisa la recomendación y aprueba la acción en un clic.</p>
+                </div>
+                <div class="status-pill">
+                    <span class="pulse-dot"></span> Motor de Reglas en Vivo
+                </div>
+            </div>
+
+            <!-- KPI Cards Grid -->
+            <section class="kpi-grid">
+                <div class="kpi-card danger">
+                    <div class="kpi-icon"><i class="fa-solid fa-sack-dollar"></i></div>
+                    <div class="kpi-data">
+                        <span class="kpi-label">Capital en Riesgo Proyectado</span>
+                        <div class="kpi-value" id="kpiCapital">$0.00 MXN</div>
+                        <span class="kpi-subtext" id="kpiCapitalSub">Pérdida estimada sin acción</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card warning">
+                    <div class="kpi-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <div class="kpi-data">
+                        <span class="kpi-label">Alertas Críticas</span>
+                        <div class="kpi-value" id="kpiCritical">0</div>
+                        <span class="kpi-subtext">Requieren atención urgente</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card primary">
+                    <div class="kpi-icon"><i class="fa-solid fa-list-check"></i></div>
+                    <div class="kpi-data">
+                        <span class="kpi-label">Acciones Pendientes</span>
+                        <div class="kpi-value" id="kpiPending">0</div>
+                        <span class="kpi-subtext">Por evaluar y aprobar</span>
+                    </div>
+                </div>
+
+                <div class="kpi-card success">
+                    <div class="kpi-icon"><i class="fa-solid fa-circle-check"></i></div>
+                    <div class="kpi-data">
+                        <span class="kpi-label">Acciones Ejecutadas</span>
+                        <div class="kpi-value" id="kpiExecuted">0</div>
+                        <span class="kpi-subtext">Optimizaciones activadas</span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Alert Cards Section -->
+            <section class="alerts-section">
+                <div class="section-title-bar">
+                    <h3><i class="fa-solid fa-bolt text-amber"></i> Tarjetas de Acción Prescriptiva</h3>
+                    <span class="badge-count" id="alertsCountBadge">0 activas</span>
+                </div>
+
+                <!-- Container where Alert Cards are rendered dynamically -->
+                <div id="alertsContainer" class="alerts-container">
+                    <!-- Target for card rendering -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Custom JS -->
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
