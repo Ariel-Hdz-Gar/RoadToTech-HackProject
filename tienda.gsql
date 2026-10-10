@@ -1,0 +1,43 @@
+USE GRAPH tienda
+
+CREATE OR REPLACE QUERY cargar_datos_Tienda_A() FOR GRAPH tienda {
+  INSERT INTO inventario VALUES ("INV_A_001", "Leche", to_datetime("2026-10-12 00:00:00"), 350);
+  INSERT INTO inventario VALUES ("INV_A_002", "Jamón", to_datetime("2026-10-15 00:00:00"), 200);
+  INSERT INTO inventario VALUES ("INV_A_003", "Donas", to_datetime("2026-11-01 00:00:00"), 180);
+  INSERT INTO inventario VALUES ("INV_A_004", "Paketaxo", to_datetime("2026-12-01 00:00:00"), 280);
+  INSERT INTO inventario VALUES ("INV_A_005", "Atún", to_datetime("2027-05-10 00:00:00"), 180);
+  INSERT INTO inventario VALUES ("INV_A_006", "Cerveza", to_datetime("2027-08-20 00:00:00"), 700);
+  PRINT "Datos de la Tienda A insertados correctamente";
+}
+
+CREATE OR REPLACE QUERY cargar_datos_Tienda_B() FOR GRAPH tienda {
+  INSERT INTO inventario VALUES ("INV_B_001", "Leche", to_datetime("2026-10-12 00:00:00"), 220);
+  INSERT INTO inventario VALUES ("INV_B_002", "Jamón", to_datetime("2026-10-15 00:00:00"), 250);
+  INSERT INTO inventario VALUES ("INV_B_003", "Donas", to_datetime("2026-11-01 00:00:00"), 300);
+  INSERT INTO inventario VALUES ("INV_B_004", "Paketaxo", to_datetime("2026-12-01 00:00:00"), 350);
+  INSERT INTO inventario VALUES ("INV_B_005", "Atún", to_datetime("2027-05-10 00:00:00"), 280);
+  INSERT INTO inventario VALUES ("INV_B_006", "Cerveza", to_datetime("2027-08-20 00:00:00"), 450);
+  PRINT "Datos de la Tienda B insertados correctamente";
+}
+
+CREATE OR REPLACE QUERY cargar_datos_Tienda_C() FOR GRAPH tienda {
+  INSERT INTO inventario VALUES ("INV_C_001", "Leche", to_datetime("2026-10-12 00:00:00"), 150);
+  INSERT INTO inventario VALUES ("INV_C_002", "Jamón", to_datetime("2026-10-15 00:00:00"), 120);
+  INSERT INTO inventario VALUES ("INV_C_003", "Donas", to_datetime("2026-11-01 00:00:00"), 350);
+  INSERT INTO inventario VALUES ("INV_C_004", "Paketaxo", to_datetime("2026-12-01 00:00:00"), 600);
+  INSERT INTO inventario VALUES ("INV_C_005", "Atún", to_datetime("2027-05-10 00:00:00"), 90);
+  INSERT INTO inventario VALUES ("INV_C_006", "Cerveza", to_datetime("2027-08-20 00:00:00"), 1400);
+  PRINT "Datos de la Tienda C insertados correctamente";
+}
+
+CREATE OR REPLACE QUERY cargar_datos_Tienda_D() FOR GRAPH tienda {
+  INSERT INTO inventario VALUES ("INV_D_001", "Leche", to_datetime("2026-10-12 00:00:00"), 400);
+  INSERT INTO inventario VALUES ("INV_D_002", "Jamón", to_datetime("2026-10-15 00:00:00"), 380);
+  INSERT INTO inventario VALUES ("INV_D_003", "Donas", to_datetime("2026-11-01 00:00:00"), 200);
+  INSERT INTO inventario VALUES ("INV_D_004", "Paketaxo", to_datetime("2026-12-01 00:00:00"), 450);
+  INSERT INTO inventario VALUES ("INV_D_005", "Atún", to_datetime("2027-05-10 00:00:00"), 350);
+  INSERT INTO inventario VALUES ("INV_D_006", "Cerveza", to_datetime("2027-08-20 00:00:00"), 900);
+  PRINT "Datos de la Tienda D insertados correctamente";
+}
+
+INSTALL QUERY cargar_datos_Tienda_A, cargar_datos_Tienda_B, cargar_datos_Tienda_C, cargar_datos_Tienda_D
