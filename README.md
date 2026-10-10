@@ -1,6 +1,14 @@
 <div align="center">
-  <h1>[ RETAILPULSE ]</h1>
+  <br>
+  <h1>[ R E T A I L P U L S E ]</h1>
   <p><b>Analitica Prescriptiva y Omnicanalidad para Retail</b></p>
+  
+  <p>
+    <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
+    <img src="https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white" alt="Flask" />
+    <img src="https://img.shields.io/badge/Graph_Database-4285F4?style=for-the-badge&logo=neo4j&logoColor=white" alt="Graph DB" />
+    <img src="https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black" alt="JavaScript" />
+  </p>
   <hr>
 </div>
 
@@ -18,17 +26,35 @@ Las herramientas tradicionales son *descriptivas*: solo avisan al gerente cuando
 ## NUESTRA SOLUCION
 Un **Sistema Experto Determinista** impulsado por Bases de Datos de Grafos. RetailPulse no es un dashboard mas; es un motor inteligente que:
 - **Detecta** alertas criticas en tiempo real (Rojas, Amarillas, Azules, Moradas).
-- **Prescribe** la accion operativa exacta (ej. "Aplicar 20% de descuento").
-- **Conecta** mediante **Omnicanalidad** al celular del cliente, disparando notificaciones push de ofertas flash en milisegundos.
+- **Prescribe** la accion operativa exacta y el porcentaje de descuento ideal.
+- **Conecta** mediante **Omnicanalidad** al celular del cliente, disparando notificaciones push de ofertas flash.
 
 ---
 
 ## MODELADO MATEMATICO (Ingenieria Industrial)
-Para garantizar cero "alucinaciones" (un riesgo inaceptable en el retail corporativo), nuestro motor de toma de decisiones no utiliza IA Generativa. Utilizamos **Investigacion de Operaciones** y modelos deterministas:
+Para garantizar cero "alucinaciones" (un riesgo inaceptable en el retail corporativo), nuestro motor de toma de decisiones no utiliza IA Generativa. Basamos nuestras prescripciones en **Investigacion de Operaciones** rigurosa.
 
-- **Puntos de Reorden (ROP):** Evaluados contra la demanda y el lead time para evitar el quiebre de stock.
-- **Proyeccion de Rescate Estocastica:** Usamos una precision de hasta 7 cifras significativas (ej. 10.8378535 u.) para proyectar exactamente cuantas unidades se venderan al aplicar un porcentaje de descuento.
-- **Impacto Financiero Real:** El sistema calcula la diferencia entre la **Merma Neta Original** (perdida total del lote) vs. el **Valor Rescatado** (capital protegido), demostrando el ROI exacto por cada decision tomada.
+A continuacion, las formulas base que rigen nuestro motor:
+
+### 1. Calculo del Punto de Reorden (ROP)
+Previene el quiebre de stock contemplando la demanda y el tiempo de respuesta.
+```math
+ROP = (D \times L) + SS
+```
+*Donde **D** es la Demanda Diaria Promedio, **L** es el Lead Time (Tiempo de Entrega) y **SS** es el Stock de Seguridad.*
+
+### 2. Calculo del Valor Rescatado (Mitigacion de Merma)
+Calcula el ingreso exacto recuperado de un lote en riesgo al aplicarle la accion prescriptiva.
+```math
+VR = U_{rescatadas} \times \left[ P_{original} \times (1 - \%D) \right]
+```
+*Donde **U** son las unidades proyectadas a venderse (precisas a 7 cifras significativas), **P** es el Precio original, y **%D** es el descuento sugerido.*
+
+### 3. Calculo de Perdida Original
+Representa el capital total congelado o destinado a la basura si no se tomara accion.
+```math
+Merma = U_{en\_riesgo} \times Costo\_Unitario
+```
 
 ---
 
@@ -81,13 +107,15 @@ Para ver el ciclo completo de omnicanalidad operando en tiempo real:
    Ve a http://127.0.0.1:5000 en tu navegador principal.
 2. **Abre la App del Cliente (B2C):**
    En una nueva ventana o pestana secundaria, entra a http://127.0.0.1:5000/cliente. Haz la ventana mas angosta para emular la pantalla de un celular.
-3. **El Flujo Magico:**
+3. **El Flujo:**
    - Selecciona la **misma tienda** en ambas pantallas (Ej. Tienda D - San Pedro).
-   - En el Dashboard Gerencial, haz clic en "Aprobar Descuento" en la alerta roja.
+   - En el Dashboard Gerencial, haz clic en "Aprobar Descuento" en una alerta roja.
    - Observa como la tarjeta de impacto financiero suma el dinero rescatado en el dashboard, mientras que la **App del Cliente recibe instantaneamente una Push Notification** con la oferta flash.
 
 ---
 
 <div align="center">
+  <br>
   <b>Con amor, el Equipo Los Papois</b>
+  <br>
 </div>
