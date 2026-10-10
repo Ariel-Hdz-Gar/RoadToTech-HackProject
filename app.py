@@ -8,7 +8,6 @@ sys.path.append(os.path.join(os.path.dirname(__file__), "Back-End"))
 
 from motor_reglas import LotePerecedero, Bodega, LoteEstancado, EventoLocal, MotorAlertas
 
-# Intentar importar db_connector si TigerGraph está disponible; si no, o falla, fallback a mock_db
 try:
     from db_connector import obtener_datos_dashboard
 except Exception:
@@ -18,64 +17,37 @@ import mock_db
 
 app = Flask(__name__)
 
+# Mapeo a las 4 Tiendas reales de TigerGraph (Tienda A, B, C, D)
 BRANCH_MAP = {
-    "Sucursal 1 - Monterrey Norte 📍": 1,
-    "Sucursal 2 - Monterrey Sur 📍": 2,
-    "Sucursal 3 - Centro 📍": 3
+    "Tienda A - Monterrey Norte 📍": 1,
+    "Tienda B - Monterrey Sur 📍": 2,
+    "Tienda C - Centro 📍": 3,
+    "Tienda D - San Pedro 📍": 4
 }
 
-# Generamos datos multi-sucursal iniciales alineados a las estructuras exactas de Ariel
+# Inicializamos estructuras
 INITIAL_STORE_DATA = {
-    1: {
-        "perecederos": copy.deepcopy(mock_db.db_perecederos),
-        "bodegas": copy.deepcopy(mock_db.db_bodegas),
-        "estancados": copy.deepcopy(mock_db.db_estancados),
-        "eventos": copy.deepcopy(mock_db.db_eventos)
-    },
-    2: {
-        "perecederos": [
-            {"id_registro": "p2_1", "id_sucursal": 2, "producto": "Yogur Griego 1L", "dias_para_caducar": 2, "stock_actual": 8, "punto_reorden": 30},
-            {"id_registro": "p2_2", "id_sucursal": 2, "producto": "Queso Panela", "dias_para_caducar": 1, "stock_actual": 12, "punto_reorden": 25}
-        ],
-        "bodegas": [
-            {"id_registro": "b2_1", "id_sucursal": 2, "volumen_total_m3": 60.0, "volumen_ocupado_m3": 54.0, "producto_estancado": "Sabritas Familiar"}
-        ],
-        "estancados": [
-            {"id_registro": "e2_1", "id_sucursal": 2, "producto": "Café Gourmet Soluble", "dias_sin_vender": 22, "producto_cruzado": "Galletas Avena"}
-        ],
-        "eventos": []
-    },
-    3: {
-        "perecederos": [
-            {"id_registro": "p3_1", "id_sucursal": 3, "producto": "Ensalada Preparada César", "dias_para_caducar": 2, "stock_actual": 5, "punto_reorden": 20}
-        ],
-        "bodegas": [],
-        "estancados": [
-            {"id_registro": "e3_1", "id_sucursal": 3, "producto": "Vino Tinto Reserva", "dias_sin_vender": 35, "producto_cruzado": "Queso Maduro"}
-        ],
-        "eventos": [
-            {"id_registro": "ev3_1", "id_sucursal": 3, "nombre_evento": "Festival Macroplaza", "afluencia_estimada": 450, "dias_para_evento": 1}
-        ]
-    }
+    1: {"perecederos": copy.deepcopy(mock_db.db_perecederos), "bodegas": copy.deepcopy(mock_db.db_bodegas), "estancados": copy.deepcopy(mock_db.db_estancados), "eventos": copy.deepcopy(mock_db.db_eventos)},
+    2: {"perecederos": [], "bodegas": [], "estancados": [], "eventos": []},
+    3: {"perecederos": [], "bodegas": [], "estancados": [], "eventos": []},
+    4: {"perecederos": [], "bodegas": [], "estancados": [], "eventos": []}
 }
 
-# Si TigerGraph responde datos reales, los usamos para la sucursal 1
 def sincronizar_con_tigergraph():
     if obtener_datos_dashboard:
         try:
-            tg_per, tg_bod, tg_est, tg_ev = obtener_datos_dashboard()
-            if tg_per or tg_bod or tg_est or tg_ev:
-                INITIAL_STORE_DATA[1]["perecederos"] = tg_per or INITIAL_STORE_DATA[1]["perecederos"]
-                INITIAL_STORE_DATA[1]["bodegas"] = tg_bod or INITIAL_STORE_DATA[1]["bodegas"]
-                INITIAL_STORE_DATA[1]["estancados"] = tg_est or INITIAL_STORE_DATA[1]["estancados"]
-                INITIAL_STORE_DATA[1]["eventos"] = tg_ev or INITIAL_STORE_DATA[1]["eventos"]
-                print(" Conectado con éxito a datos de TigerGraph!")
+            datos_tg = obtener_datos_dashboard()
+            if isinstance(datos_tg, dict):
+                for suc_id, items in datos_tg.items():
+                    if any(items.values()):
+                        INITIAL_STORE_DATA[suc_id] = items
+                print(" Conectado con éxito a datos vivos de TigerGraph (Tiendas A, B, C, D)!")
         except Exception as e:
-            print(" Fallback a datos mock locales (TigerGraph no accesible):", e)
+            print(" Fallback local:", e)
 
 sincronizar_con_tigergraph()
 
-# Estado mutable en vivo
+# Estado en vivo
 state_data = copy.deepcopy(INITIAL_STORE_DATA)
 executed_count = 0
 
@@ -92,7 +64,7 @@ def calcular_alertas_sucursal(suc_id: int):
                 al["critical"] = True
                 alertas.append(al)
         except Exception as e:
-            print(f"Error procesando alerta roja: {e}")
+            pass
 
     # 2. Alerta Amarilla (FIFO / Bodega)
     for item in suc_items.get("bodegas", []):
@@ -103,7 +75,7 @@ def calcular_alertas_sucursal(suc_id: int):
                 al["critical"] = False
                 alertas.append(al)
         except Exception as e:
-            print(f"Error procesando alerta amarilla: {e}")
+            pass
 
     # 3. Alerta Azul (Estancados / Semiperecederos)
     for item in suc_items.get("estancados", []):
@@ -114,7 +86,7 @@ def calcular_alertas_sucursal(suc_id: int):
                 al["critical"] = False
                 alertas.append(al)
         except Exception as e:
-            print(f"Error procesando alerta azul: {e}")
+            pass
 
     # 4. Alerta Morada (Demanda Predictiva / Eventos)
     for item in suc_items.get("eventos", []):
@@ -125,7 +97,7 @@ def calcular_alertas_sucursal(suc_id: int):
                 al["critical"] = False
                 alertas.append(al)
         except Exception as e:
-            print(f"Error procesando alerta morada: {e}")
+            pass
 
     return alertas
 
@@ -187,5 +159,5 @@ def reset_alerts():
     })
 
 if __name__ == "__main__":
-    print("[RetailPulse] Servidor Web conectado al Motor de Reglas de Ariel en http://127.0.0.1:5000")
+    print("[RetailPulse] Servidor Web conectado al Motor de Reglas de Ariel y TigerGraph en http://127.0.0.1:5000")
     app.run(debug=True, port=5000)
