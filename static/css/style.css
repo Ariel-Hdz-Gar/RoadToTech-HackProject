@@ -1,5 +1,5 @@
 /* ==========================================================================
-   RetailPulse - Custom Glassmorphism Stylesheet
+   RetailPulse - Custom Glassmorphism Stylesheet (4 Archetypes)
    ========================================================================== */
 
 :root {
@@ -10,7 +10,7 @@
     --text-secondary: #94A3B8;
     --text-muted: #64748B;
     
-    /* Category Colors */
+    /* 4 Category Colors */
     --color-red: #EF4444;
     --color-red-bg: rgba(239, 68, 68, 0.12);
     --color-red-glow: rgba(239, 68, 68, 0.25);
@@ -18,6 +18,10 @@
     --color-yellow: #F59E0B;
     --color-yellow-bg: rgba(245, 158, 11, 0.12);
     --color-yellow-glow: rgba(245, 158, 11, 0.25);
+
+    --color-blue: #3B82F6;
+    --color-blue-bg: rgba(59, 130, 246, 0.12);
+    --color-blue-glow: rgba(59, 130, 246, 0.25);
     
     --color-purple: #A855F7;
     --color-purple-bg: rgba(168, 85, 247, 0.12);
@@ -308,7 +312,7 @@ body {
     gap: 20px;
 }
 
-/* Alert Card Component */
+/* Alert Card Component - 4 Archetypes */
 .alert-card {
     background: var(--bg-card);
     backdrop-filter: blur(16px);
@@ -338,6 +342,11 @@ body {
 .alert-card.yellow {
     --card-border-color: var(--color-yellow);
     --card-glow-color: var(--color-yellow-glow);
+}
+
+.alert-card.blue {
+    --card-border-color: var(--color-blue);
+    --card-glow-color: var(--color-blue-glow);
 }
 
 .alert-card.purple {
@@ -371,6 +380,7 @@ body {
 
 .red .card-header-badge { background: var(--color-red-bg); color: #FCA5A5; border: 1px solid rgba(239,68,68,0.3); }
 .yellow .card-header-badge { background: var(--color-yellow-bg); color: #FDE047; border: 1px solid rgba(245,158,11,0.3); }
+.blue .card-header-badge { background: var(--color-blue-bg); color: #93C5FD; border: 1px solid rgba(59,130,246,0.3); }
 .purple .card-header-badge { background: var(--color-purple-bg); color: #E9D5FF; border: 1px solid rgba(168,85,247,0.3); }
 
 .card-title {
