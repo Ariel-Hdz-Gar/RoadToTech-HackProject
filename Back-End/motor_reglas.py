@@ -78,14 +78,23 @@ class MotorAlertas:
     @staticmethod
     def procesar_alerta_morada(evento: EventoLocal) -> dict | None:
         if evento.afluencia_estimada > 0 and evento.dias_para_evento <= 3:
-            cajeros = math.ceil(evento.afluencia_estimada / 50)
+            # Modelo Numérico de Colas (Erlang Retail):
+            # - Tasa de captura de mercado: 12% de la afluencia acude a esta sucursal específica.
+            # - Ventana de pico comercial: 3 horas (pre y post evento).
+            # - Capacidad de despacho: 20 clientes/hora por cajero (promedio 3 min/ticket).
+            # - Límite físico estructural: Máximo 3 cajas simultáneas en tienda de conveniencia.
+            clientes_tienda = evento.afluencia_estimada * 0.12
+            tasa_llegada_hora = clientes_tienda / 3.0
+            cajeros_calculados = math.ceil(tasa_llegada_hora / 20.0)
+            cajeros = min(max(1, cajeros_calculados), 3)
+
             return {
                 "id_registro": evento.id_registro,
                 "tipo_alerta": "morada",
                 "titulo": "Demanda Predictiva por Evento",
                 "descripcion": f"Evento: {evento.nombre_evento} en {evento.dias_para_evento} días.",
                 "recomendacion_inventario": "Sobresurtir Cerveza de 6 y Atún.",
-                "recomendacion_personal": f"Asignar {cajeros} turnos extra.",
+                "recomendacion_personal": f"Asignar {cajeros} turno(s) extra de caja.",
                 "texto_boton": "Aprobar Recursos Extra",
                 "endpoint_aprobacion": f"/api/v1/ejecutar-accion/morada/{evento.id_registro}"
             }
