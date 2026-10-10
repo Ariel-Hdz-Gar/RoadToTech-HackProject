@@ -27,6 +27,7 @@ def obtener_datos_dashboard():
 
     try:
         inventario_raw = conn.getVertices("inventario")
+        print("DATOS DE TIGERGRAPH:", inventario_raw)
         almacen_raw = conn.getVertices("almacen")
     except Exception as e:
         print(f"Error consultando vértices de TigerGraph: {e}")
@@ -36,33 +37,42 @@ def obtener_datos_dashboard():
 
     db_perecederos = []
     db_estancados = []
+
+    rops = {"Leche": 78, "Jamón": 52, "Donas": 9, "Paketaxo": 7, "Atún": 15, "Cerveza": 9}
     
     # Procesar Inventario según el esquema real de Michelle:
     # inventario ['nombre_producto', 'fecha_caducidad', 'cantidad']
     for item in inventario_raw:
-        attr = item.get("attributes", {})
-        v_id = item.get("v_id", "")
+        attr = item["attributes"]
+        v_id = item["v_id"]
+        nombre = attr.get("nombre_producto", "")
         
-        dias_caducidad = 3
-        if "fecha_caducidad" in attr and attr["fecha_caducidad"]:
-            try:
-                fecha_cad = datetime.strptime(str(attr["fecha_caducidad"])[:10], "%Y-%m-%d")
-                dias_caducidad = (fecha_cad - fecha_hoy).days
-            except Exception:
-                dias_caducidad = 2
+        # Calcular días para caducar
+        fecha_cad = datetime.strptime(attr["fecha_caducidad"][:10], "%Y-%m-%d")
+        dias_caducidad = (fecha_cad - fecha_hoy).days
 
-        cant = attr.get("cantidad", 10)
-        prod = attr.get("nombre_producto", v_id)
+        # El nuevo esquema de Michelle usa 'cantidad' en lugar de 'stock_actual'
+        stock = attr.get("cantidad", 0) 
+        punto_reorden_calculado = rops.get(nombre, 50)
 
-        # Regla: Perecedero
-        db_perecederos.append({
-            "id_registro": str(v_id),
-            "id_sucursal": 1,
-            "producto": prod,
-            "dias_para_caducar": dias_caducidad,
-            "stock_actual": cant,
-            "punto_reorden": max(15, int(cant * 1.5))
-        })
+        # Separar lógica manualmente ya que nos quitaron la columna 'categoria'
+        if nombre in ["Leche", "Jamón"]:
+            db_perecederos.append({
+                "id_registro": v_id,
+                "id_sucursal": 1, # Asignamos la 1 temporalmente para el demo del dashboard
+                "producto": nombre,
+                "dias_para_caducar": dias_caducidad,
+                "stock_actual": stock,
+                "punto_reorden": punto_reorden_calculado
+            })
+        elif nombre == "Donas":
+            db_estancados.append({
+                "id_registro": v_id,
+                "id_sucursal": 1,
+                "producto": nombre,
+                "dias_sin_vender": 15, # Hardcodeado porque se eliminó de la BD
+                "producto_cruzado": "Leche" 
+            })
 
     # Procesar Almacén según el esquema real de Michelle:
     # almacen ['capacidad_max_m3', 'ocupacion_actual_m3']
