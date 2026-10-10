@@ -23,3 +23,33 @@ Para garantizar cero "alucinaciones" (crítico en retail), evitamos la IA generat
 - **Motor de Reglas:** Lógica matemática de Investigación de Operaciones (ROPs, cálculos de mitigación a 7 cifras significativas).
 - **Frontend (B2B):** HTML5, CSS3, JavaScript (Vanilla) - *Dashboard Gerencial*.
 - **Frontend (B2C):** Long-polling asíncrono para notificaciones push - *App Cliente*.
+
+## ?? Instalación y Configuración (Entorno Local)
+
+Para correr el proyecto en cualquier computadora (Windows/Mac/Linux), sigue estos pasos:
+
+1. **Clonar el repositorio:**
+   ``bash
+   git clone https://github.com/Ariel-Hdz-Gar/RoadToTech-HackProject.git
+   cd RoadToTech-HackProject
+   ``
+
+2. **Crear un entorno virtual (Recomendado):**
+   ``bash
+   python -m venv venv
+   # En Windows:
+   venv\Scripts\activate
+   # En Mac/Linux:
+   source venv/bin/activate
+   ``
+
+3. **Instalar las dependencias:**
+   ``bash
+   pip install -r requirements.txt
+   ``
+
+4. **Arrancar el servidor:**
+   ``bash
+   python app.py
+   ``
+   *El servidor iniciará en el puerto 5000 indicando la conexión exitosa.*
