@@ -71,6 +71,9 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (alert.tipo_alerta === 'amarilla') {
                 categoryIcon = '<i class="fa-solid fa-boxes-stacked"></i>';
                 badgeHtml = `<span class="status-badge badge-amarilla">${categoryIcon} Alerta Amarilla (FIFO)</span>`;
+            } else if (alert.tipo_alerta === 'azul') {
+                categoryIcon = '<i class="fa-solid fa-clock-rotate-left"></i>';
+                badgeHtml = `<span class="status-badge badge-azul">${categoryIcon} Alerta Azul (Lenta Rotación)</span>`;
             } else if (alert.tipo_alerta === 'morada') {
                 categoryIcon = '<i class="fa-solid fa-calendar-day"></i>';
                 badgeHtml = `<span class="status-badge badge-morada">${categoryIcon} Alerta Morada (Demanda)</span>`;

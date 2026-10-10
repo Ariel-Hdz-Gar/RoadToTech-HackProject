@@ -347,6 +347,7 @@ body {
 
 .badge-roja { background: var(--status-red-bg); color: var(--status-red-text); border: 1px solid var(--status-red-border); }
 .badge-amarilla { background: var(--status-yellow-bg); color: var(--status-yellow-text); border: 1px solid var(--status-yellow-border); }
+.badge-azul { background: rgba(56, 189, 248, 0.15); color: #38BDF8; border: 1px solid rgba(56, 189, 248, 0.35); }
 .badge-morada { background: var(--status-purple-bg); color: var(--status-purple-text); border: 1px solid var(--status-purple-border); }
 
 .item-title {
