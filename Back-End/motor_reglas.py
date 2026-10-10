@@ -94,7 +94,7 @@ class MotorAlertas:
                 "titulo": "Demanda Predictiva por Evento",
                 "descripcion": f"Evento: {evento.nombre_evento} en {evento.dias_para_evento} días.",
                 "recomendacion_inventario": "Sobresurtir Cerveza de 6 y Atún.",
-                "recomendacion_personal": f"Asignar {cajeros} turno(s) extra de caja.",
+                "recomendacion_personal": f"Habilitar {cajeros} cajero(s) de refuerzo (Turno parcial de 4h en horario pico del evento).",
                 "texto_boton": "Aprobar Recursos Extra",
                 "endpoint_aprobacion": f"/api/v1/ejecutar-accion/morada/{evento.id_registro}"
             }
