@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from motor_reglas import LotePerecedero, Bodega, EventoLocal, MotorAlertas
+from mock_db import db_perecederos, db_bodegas, db_eventos
 
 app = FastAPI(title="API RetailPulse - Centro de Mando")
 
@@ -12,36 +14,67 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.post("/api/v1/simular/alerta-roja")
+def simular_perecedero(lote: LotePerecedero):
+    """Recibe datos de un lote y devuelve la alerta si está próximo a caducar."""
+    alerta = MotorAlertas.procesar_alerta_roja(lote)
+    if not alerta:
+        return {"status": "ok", "mensaje": "Inventario sano, no requiere acción."}
+    return alerta
+
+@app.post("/api/v1/simular/alerta-amarilla")
+def simular_bodega(bodega: Bodega):
+    """Recibe datos de capacidad y devuelve la alerta si hay saturación."""
+    alerta = MotorAlertas.procesar_alerta_amarilla(bodega)
+    if not alerta:
+        return {"status": "ok", "mensaje": "Capacidad de bodega dentro de los límites."}
+    return alerta
+
+@app.post("/api/v1/simular/alerta-morada")
+def simular_evento(evento: EventoLocal):
+    """Recibe datos de un evento y calcula el personal y sobresurtido necesario."""
+    alerta = MotorAlertas.procesar_alerta_morada(evento)
+    if not alerta:
+        return {"status": "ok", "mensaje": "Afluencia baja, no requiere acción especial."}
+    return alerta
+
 @app.get("/api/v1/alertas/{id_sucursal}")
-def obtener_alertas_sucursal(id_sucursal: int):
+def obtener_alertas_dashboard(id_sucursal: int):
     """
-    Retorna las Tarjetas de Acción activas para una sucursal específica.
-    Por ahora retorna datos estáticos, luego los calcularemos desde Tigerdata.
+    Endpoint principal para el Frontend. 
+    Escanea la DB simulada y devuelve las Tarjetas de Acción procesadas.
     """
+    alertas_generadas = []
+
+    # 1. Buscar problemas en perecederos (Alerta Roja)
+    for item in db_perecederos:
+        if item["id_sucursal"] == id_sucursal:
+            lote = LotePerecedero(**item)
+            alerta = MotorAlertas.procesar_alerta_roja(lote)
+            if alerta:
+                alertas_generadas.append(alerta)
+
+    # 2. Buscar problemas de saturación en bodega (Alerta Amarilla)
+    for item in db_bodegas:
+        if item["id_sucursal"] == id_sucursal:
+            bodega = Bodega(**item)
+            alerta = MotorAlertas.procesar_alerta_amarilla(bodega)
+            if alerta:
+                alertas_generadas.append(alerta)
+
+    # 3. Buscar eventos locales (Alerta Morada)
+    for item in db_eventos:
+        if item["id_sucursal"] == id_sucursal:
+            if item["afluencia_estimada"] > 0:
+                evento = EventoLocal(**item)
+                alerta = MotorAlertas.procesar_alerta_morada(evento)
+                if alerta:
+                    alertas_generadas.append(alerta)
+
     return {
         "sucursal_id": id_sucursal,
-        "alertas_activas": [
-            {
-                "id_alerta": 101,
-                "tipo_alerta": "morada",
-                "titulo": "Pico de Demanda Detectado",
-                "descripcion": "Concierto en Arena Local a 2km. Afluencia estimada: +300%.",
-                "recomendacion_inventario": "Sobresurtido: 500 cervezas, 100 bolsas de hielo.",
-                "recomendacion_personal": "Asignar 2 cajeros extra de 8:00 PM a 12:00 AM.",
-                "texto_boton": "Aprobar Sobresurtido y Turnos Extra",
-                "endpoint_aprobacion": "/api/v1/ejecutar-accion/evento-masivo"
-            },
-            {
-                "id_alerta": 102,
-                "tipo_alerta": "amarilla",
-                "titulo": "Saturación de Bodega",
-                "descripcion": "Volumen al 90%. Riesgo de bloqueo para descarga matutina.",
-                "recomendacion_inventario": "Activar promoción 3x2 en lote estancado de botanas.",
-                "recomendacion_personal": "Reasignar 1 empleado de piso a bodega para surtido FIFO.",
-                "texto_boton": "Aprobar Promoción y Reasignación",
-                "endpoint_aprobacion": "/api/v1/ejecutar-accion/liberar-bodega"
-            }
-        ]
+        "total_alertas": len(alertas_generadas),
+        "tarjetas_accion": alertas_generadas
     }
 
 @app.post("/api/v1/ejecutar-accion/{tipo_accion}")
