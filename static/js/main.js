@@ -7,11 +7,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const kpiCritical = document.getElementById('kpiCritical');
     const kpiPending = document.getElementById('kpiPending');
     const kpiExecuted = document.getElementById('kpiExecuted');
+    const kpiSaved = document.getElementById('kpiSaved');
     const toastContainer = document.getElementById('toastContainer');
 
     let currentBranch = branchSelect.value;
     let alertsData = {};
     let executedCount = 0;
+    let totalSavedMxn = 0.0;
 
     // Fetch alerts from Flask API (connected to Ariel's backend)
     async function loadAlerts() {
@@ -20,6 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             alertsData = data.alerts;
             executedCount = data.executed_count || 0;
+            totalSavedMxn = data.total_saved_mxn || 0.0;
             renderDashboard();
         } catch (error) {
             console.error('Error fetching alerts:', error);
@@ -38,6 +41,9 @@ document.addEventListener('DOMContentLoaded', () => {
         kpiCritical.textContent = criticalCount;
         kpiPending.textContent = pendingCount;
         kpiExecuted.textContent = executedCount;
+        if (kpiSaved) {
+            kpiSaved.textContent = `$${totalSavedMxn.toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        }
         alertsCountBadge.textContent = `${pendingCount} activas`;
 
         // Clear table body
@@ -85,6 +91,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 staffHtml = `<div class="recommendation-staff"><i class="fa-solid fa-user-check"></i> Personal: ${alert.recomendacion_personal}</div>`;
             }
 
+            // Financial impact badge formatting
+            let finHtml = '';
+            if (alert.detalle_financiero) {
+                finHtml = `<div class="financial-badge"><i class="fa-solid fa-arrow-trend-up"></i> ${alert.detalle_financiero}</div>`;
+            }
+
+            const savedAmount = alert.ahorro_recuperado_mxn || 0.0;
+
             tr.innerHTML = `
                 <td>${badgeHtml}</td>
                 <td>
@@ -94,9 +108,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 <td>
                     <div class="recommendation-inv">${alert.recomendacion_inventario}</div>
                     ${staffHtml}
+                    ${finHtml}
                 </td>
                 <td style="text-align: center;">
-                    <button class="btn-action" onclick="approveAction('${alert.id}', '${escapeQuotes(alert.titulo)}')">
+                    <button class="btn-action" onclick="approveAction('${alert.id}', '${escapeQuotes(alert.titulo)}', ${savedAmount})">
                         <i class="fa-solid fa-check"></i> ${alert.texto_boton || 'Aprobar Acción'}
                     </button>
                 </td>
@@ -111,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // Approve Action function
-    window.approveAction = async function(alertId, alertTitle) {
+    window.approveAction = async function(alertId, alertTitle, savedAmount = 0.0) {
         const rowElement = document.getElementById(`row-${alertId}`);
         
         if (rowElement) {
@@ -122,15 +137,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/alerts/approve', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ branch: currentBranch, alert_id: alertId })
+                body: JSON.stringify({ branch: currentBranch, alert_id: alertId, saved_amount: savedAmount })
             });
             const resData = await response.json();
 
             if (resData.success) {
                 alertsData = resData.alerts;
                 executedCount = resData.executed_count;
+                totalSavedMxn = resData.total_saved_mxn || 0.0;
 
-                showToast(`Acción ejecutada correctamente: ${alertTitle}`);
+                showToast(`Acción ejecutada: +$${savedAmount.toLocaleString('es-MX', {minimumFractionDigits: 2})} MXN rescatados`);
 
                 setTimeout(() => {
                     renderDashboard();
@@ -149,6 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (resData.success) {
                 alertsData = resData.alerts;
                 executedCount = resData.executed_count;
+                totalSavedMxn = 0.0;
                 showToast('Datos del Motor Restablecidos');
                 renderDashboard();
             }

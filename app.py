@@ -51,6 +51,7 @@ sincronizar_con_tigergraph()
 # Estado en vivo
 state_data = copy.deepcopy(INITIAL_STORE_DATA)
 executed_count = 0
+total_saved_mxn = 0.0
 
 def calcular_alertas_sucursal(suc_id: int):
     suc_items = state_data.get(suc_id, {"perecederos": [], "bodegas": [], "estancados": [], "eventos": []})
@@ -116,15 +117,17 @@ def index():
 def get_alerts():
     return jsonify({
         "alerts": generar_todas_alertas(),
-        "executed_count": executed_count
+        "executed_count": executed_count,
+        "total_saved_mxn": round(total_saved_mxn, 2)
     })
 
 @app.route("/api/alerts/approve", methods=["POST"])
 def approve_alert():
-    global executed_count
+    global executed_count, total_saved_mxn
     data = request.get_json() or {}
     branch_name = data.get("branch")
     alert_id = str(data.get("alert_id", ""))
+    saved_amount = float(data.get("saved_amount", 0.0))
 
     id_suc = BRANCH_MAP.get(branch_name, 1)
     suc_items = state_data.get(id_suc, {})
@@ -146,22 +149,26 @@ def approve_alert():
 
     if removido:
         executed_count += 1
+        total_saved_mxn += saved_amount
 
     return jsonify({
         "success": True,
         "alerts": generar_todas_alertas(),
-        "executed_count": executed_count
+        "executed_count": executed_count,
+        "total_saved_mxn": round(total_saved_mxn, 2)
     })
 
 @app.route("/api/alerts/reset", methods=["POST"])
 def reset_alerts():
-    global state_data, executed_count
+    global state_data, executed_count, total_saved_mxn
     state_data = copy.deepcopy(INITIAL_STORE_DATA)
     executed_count = 0
+    total_saved_mxn = 0.0
     return jsonify({
         "success": True,
         "alerts": generar_todas_alertas(),
-        "executed_count": executed_count
+        "executed_count": executed_count,
+        "total_saved_mxn": 0.0
     })
 
 if __name__ == "__main__":

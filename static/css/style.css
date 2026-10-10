@@ -216,6 +216,7 @@ body {
 .metric-card.border-danger { border-top: 3px solid #EF4444; }
 .metric-card.border-primary { border-top: 3px solid #38BDF8; }
 .metric-card.border-success { border-top: 3px solid #10B981; }
+.metric-card.border-money { border-top: 3px solid #F59E0B; }
 
 .metric-label {
     font-size: 0.8rem;
@@ -230,6 +231,10 @@ body {
     font-weight: 800;
     color: var(--text-main);
     margin: 6px 0 2px;
+}
+
+.text-emerald {
+    color: #10B981 !important;
 }
 
 .metric-subtext {
@@ -250,6 +255,7 @@ body {
 .icon-danger { background: rgba(239, 68, 68, 0.15); color: #FCA5A5; }
 .icon-primary { background: rgba(56, 189, 248, 0.15); color: #38BDF8; }
 .icon-success { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+.icon-money { background: rgba(245, 158, 11, 0.15); color: #FBBF24; }
 
 /* Table Section */
 .table-section {
@@ -370,6 +376,20 @@ body {
 .recommendation-staff {
     color: #38BDF8;
     font-size: 0.85rem;
+}
+
+.financial-badge {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: #34D399;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    background: rgba(16, 185, 129, 0.1);
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 /* Action Button */

@@ -32,6 +32,12 @@ class MotorAlertas:
     def procesar_alerta_roja(lote: LotePerecedero) -> dict | None:
         # Alerta por caducidad próxima o por punto de reorden alcanzado
         if lote.dias_para_caducar <= 3 or lote.stock_actual <= lote.punto_reorden:
+            # Modelo de Rescate Financiero FEFO:
+            # Precio venta unitario aprox: $35.5 MXN (Leche) / $50.5 MXN (Jamón)
+            # Tasa de liquidación acelerada con descuento: recupera el 72% del valor que se iría a merma total ($0)
+            precio_unitario = 35.5 if "Leche" in lote.producto else 50.5
+            ahorro_mxn = round(lote.stock_actual * precio_unitario * 0.72, 2)
+            
             return {
                 "id_registro": lote.id_registro,
                 "tipo_alerta": "roja",
@@ -39,6 +45,8 @@ class MotorAlertas:
                 "descripcion": f"'{lote.producto}' caduca en {lote.dias_para_caducar} días o stock actual ({lote.stock_actual}) tocó punto de reorden ({lote.punto_reorden}).",
                 "recomendacion_inventario": "Emitir orden de compra al almacén central por lote de 26 días.",
                 "recomendacion_personal": "Revisar espacio en anaquel.",
+                "ahorro_recuperado_mxn": ahorro_mxn,
+                "detalle_financiero": f"Evita ${ahorro_mxn:,.2f} MXN en merma directa (pérdida total evitada al 72%).",
                 "texto_boton": "Aprobar Pedido a Almacén",
                 "endpoint_aprobacion": f"/api/v1/ejecutar-accion/roja/{lote.id_registro}"
             }
@@ -48,6 +56,8 @@ class MotorAlertas:
     def procesar_alerta_amarilla(bodega: Bodega) -> dict | None:
         porcentaje = (bodega.volumen_ocupado_m3 / bodega.volumen_total_m3) * 100
         if porcentaje > 80.0:
+            # Costo logístico por bloqueo de descarga / camión en espera: ~$1,850 MXN por incidente
+            ahorro_mxn = 1850.00
             return {
                 "id_registro": bodega.id_registro,
                 "tipo_alerta": "amarilla",
@@ -55,6 +65,8 @@ class MotorAlertas:
                 "descripcion": f"Bodega al {porcentaje:.1f}% de capacidad por espacio físico.",
                 "recomendacion_inventario": f"Acelerar rotación de {bodega.producto_estancado}.",
                 "recomendacion_personal": "Reordenar pasillos.",
+                "ahorro_recuperado_mxn": ahorro_mxn,
+                "detalle_financiero": f"Ahorra ${ahorro_mxn:,.2f} MXN evitando penalización de descarga y sobrecosto de flete.",
                 "texto_boton": "Optimizar Espacio",
                 "endpoint_aprobacion": f"/api/v1/ejecutar-accion/amarilla/{bodega.id_registro}"
             }
@@ -63,6 +75,10 @@ class MotorAlertas:
     @staticmethod
     def procesar_alerta_azul(lote: LoteEstancado) -> dict | None:
         if lote.dias_sin_vender > 10:
+            # Descongelamiento de Capital de Trabajo:
+            # Un lote de 200 paquetes a $30 MXN inmoviliza $6,000 MXN.
+            # Venta cruzada convierte 65% de inventario ocioso en liquidez activa inmediata.
+            ahorro_mxn = round(200 * 30.0 * 0.65, 2)
             return {
                 "id_registro": lote.id_registro,
                 "tipo_alerta": "azul",
@@ -70,6 +86,8 @@ class MotorAlertas:
                 "descripcion": f"'{lote.producto}' lleva {lote.dias_sin_vender} días con baja rotación.",
                 "recomendacion_inventario": f"Venta cruzada: Descuento al combinar con {lote.producto_cruzado}.",
                 "recomendacion_personal": "N/A",
+                "ahorro_recuperado_mxn": ahorro_mxn,
+                "detalle_financiero": f"Recupera ${ahorro_mxn:,.2f} MXN en flujo de caja liberando capital inmovilizado.",
                 "texto_boton": "Aplicar Venta Cruzada",
                 "endpoint_aprobacion": f"/api/v1/ejecutar-accion/azul/{lote.id_registro}"
             }
@@ -78,15 +96,18 @@ class MotorAlertas:
     @staticmethod
     def procesar_alerta_morada(evento: EventoLocal) -> dict | None:
         if evento.afluencia_estimada > 0 and evento.dias_para_evento <= 3:
-            # Modelo Numérico de Colas (Erlang Retail):
-            # - Tasa de captura de mercado: 12% de la afluencia acude a esta sucursal específica.
-            # - Ventana de pico comercial: 3 horas (pre y post evento).
-            # - Capacidad de despacho: 20 clientes/hora por cajero (promedio 3 min/ticket).
-            # - Límite físico estructural: Máximo 3 cajas simultáneas en tienda de conveniencia.
             clientes_tienda = evento.afluencia_estimada * 0.12
             tasa_llegada_hora = clientes_tienda / 3.0
             cajeros_calculados = math.ceil(tasa_llegada_hora / 20.0)
             cajeros = min(max(1, cajeros_calculados), 3)
+
+            # Ganancia neta capturada por evento:
+            # Ticket promedio por cliente en evento: $125 MXN.
+            # Ganancia bruta estimada: clientes_tienda * $125
+            # Menos costo del turno parcial del cajero (4h * $90 MXN/h = $360 MXN):
+            ventas_capturadas = clientes_tienda * 125.0
+            costo_cajero = cajeros * 360.0
+            ahorro_mxn = round(ventas_capturadas - costo_cajero, 2)
 
             return {
                 "id_registro": evento.id_registro,
@@ -95,6 +116,8 @@ class MotorAlertas:
                 "descripcion": f"Evento: {evento.nombre_evento} en {evento.dias_para_evento} días.",
                 "recomendacion_inventario": "Sobresurtir Cerveza de 6 y Atún.",
                 "recomendacion_personal": f"Habilitar {cajeros} cajero(s) de refuerzo (Turno parcial de 4h en horario pico del evento).",
+                "ahorro_recuperado_mxn": ahorro_mxn,
+                "detalle_financiero": f"Genera ${ahorro_mxn:,.2f} MXN en ventas netas incrementales (descontando nómina de apoyo).",
                 "texto_boton": "Aprobar Recursos Extra",
                 "endpoint_aprobacion": f"/api/v1/ejecutar-accion/morada/{evento.id_registro}"
             }
